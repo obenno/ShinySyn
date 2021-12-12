@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css?family=Gochi+Hand&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
+
+.navbar {
+    font-family: 'Yusei Magic';
+    font-size: 1.25rem;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+}
+
+h2, h3, h4, h5, h6 {
+    font-family: 'Yusei Magic', sans-serif;
+}
+
+.title {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+.boxLike {
+    margin-top: 15px;
+    margin-right: 10px;
+    margin-left: 10px;
+    background-color: #ABBAEA;
+    padding-left: 10px;
+    padding-right: 10px;
+    border: 3px solid black;
+    border-radius: 15px;
+}
+
+.boxMargin{
+    margin-top: 15px;
+    margin-right: 10px;
+    margin-left: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
