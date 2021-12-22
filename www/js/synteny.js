@@ -290,7 +290,9 @@ function plotSynteny(x){
                 "<b>Subject:</b> " + d.s_startGene + " : " + d.s_endGene;
         })  // Add tippy data attr
         .on("mouseover", function(){
-            d3.select(this).transition()
+            d3.select(this)
+                .transition()
+                .delay(600)
                 .duration(50)
                 .style("fill", "red");
         })
@@ -672,6 +674,7 @@ function plot_microSyntenyGenes(svg, myData, xScale, yaxis,
         .on("mouseover", function(){
             d3.select(this).transition()
                 .duration(50)
+                .delay(600)
                 .style("stroke-width", "2")
                 .style("stroke", "black");
         })
@@ -736,14 +739,21 @@ function createPath(svg, pathData, pathClass = "ribbons"){
   pathGroup.selectAll("path")
         .on("mouseover", function(){
             d3.select(this).transition()
+                .delay(600)
                 .duration(50)
                 .style("fill-opacity", 0.86);
             let sourceRectID = this.__data__.source.id;
             let targetRectID = this.__data__.target.id;
             d3.select("#" + sourceRectID)
+                .transition()
+                .delay(600)
+                .duration(50)
                 .style("stroke-width", "2")
                 .style("stroke", "black");
             d3.select("#" + targetRectID)
+                .transition()
+                .delay(600)
+                .duration(50)
                 .style("stroke-width", "2")
                 .style("stroke", "black");
         })
@@ -761,9 +771,13 @@ function createPath(svg, pathData, pathClass = "ribbons"){
             let sourceRectID = this.__data__.source.id;
             let targetRectID = this.__data__.target.id;
             d3.select("#" + sourceRectID)
+                .transition()
+                .duration(50)
                 .style("stroke-width", null)
                 .style("stroke", null);
             d3.select("#" + targetRectID)
+                .transition()
+                .duration(50)
                 .style("stroke-width", null)
                 .style("stroke", null);
 
