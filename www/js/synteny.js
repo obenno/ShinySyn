@@ -13,7 +13,7 @@ var fontSize = 10;
 var outerRadius = Math.min(width, height) * 0.5 - 60;
 var innerRadius = outerRadius - 10;
 var padAngle = 5 / innerRadius;
-
+var tooltipDelay = 1000; // tooltip delay time in miliseconds
 
 // microSynteny dimension parameters
 var heatmapMargin = ({top: 10, right: 0, bottom: 20, left: 0});
@@ -292,7 +292,7 @@ function plotSynteny(x){
         .on("mouseover", function(){
             d3.select(this)
                 .transition()
-                .delay(600)
+                .delay(tooltipDelay)
                 .duration(50)
                 .style("fill", "red");
         })
@@ -348,9 +348,9 @@ function plotSynteny(x){
         .attr("transform", `translate(${width / 2-subjetLabelWidth}, ${40-height / 2})`);
 
     // Activate tooltips
-    tippy(".macroQueryArc path", {trigger: "mouseenter click", followCursor: "initial", delay: [600, null]});
-    tippy(".macroSubjectArc path", {trigger: "mouseenter click", followCursor: "initial",  delay: [600, null]});
-    tippy(".macroRibbons path", {trigger: "mouseenter click", followCursor: "initial", allowHTML: true, delay: [600, null]});
+    tippy(".macroQueryArc path", {trigger: "mouseenter click", followCursor: "initial", delay: [tooltipDelay, null]});
+    tippy(".macroSubjectArc path", {trigger: "mouseenter click", followCursor: "initial",  delay: [tooltipDelay, null]});
+    tippy(".macroRibbons path", {trigger: "mouseenter click", followCursor: "initial", allowHTML: true, delay: [tooltipDelay, null]});
     // update svg download link
     downloadSVG("marcoSynteny_download", "macroSyntenyBlock"); 
 }
@@ -608,9 +608,9 @@ function plotSelecedMicroSynteny(x){
         d3.select("#microSyntenyBlock")
             .append(() => microSVG.node());
         // Activate tippy tooltips
-        tippy(".microQueryGroup rect",  {trigger: "mouseenter click", followCursor: "initial",  delay: [600, null]});
-        tippy(".microSubjectGroup rect",  {trigger: "mouseenter click", followCursor: "initial",  delay: [600, null]});
-        tippy(".microRibbons path",  {trigger: "mouseenter click", allowHTML: true, followCursor: "initial",  delay: [600, null]});
+        tippy(".microQueryGroup rect",  {trigger: "mouseenter click", followCursor: "initial",  delay: [tooltipDelay, null]});
+        tippy(".microSubjectGroup rect",  {trigger: "mouseenter click", followCursor: "initial",  delay: [tooltipDelay, null]});
+        tippy(".microRibbons path",  {trigger: "mouseenter click", allowHTML: true, followCursor: "initial",  delay: [tooltipDelay, null]});
         // update svg download link
         //downloadSVG("microSynteny_download", "microSyntenyBlock");
     }
@@ -633,9 +633,9 @@ function plotSelecedMicroSynteny(x){
         .append(() => microSVG.node());
     downloadSVG("microSynteny_download", "microSyntenyBlock");
     // Add tooltips
-    tippy(".microQueryGroup rect",  {trigger: "mouseenter click", followCursor: "initial",  delay: [600, null]});
-    tippy(".microSubjectGroup rect",  {trigger: "mouseenter click", followCursor: "initial",  delay: [600, null]});
-    tippy(".microRibbons path",  {trigger: "mouseenter click", allowHTML: true, followCursor: "initial",  delay: [600, null]});
+    tippy(".microQueryGroup rect",  {trigger: "mouseenter click", followCursor: "initial",  delay: [tooltipDelay, null]});
+    tippy(".microSubjectGroup rect",  {trigger: "mouseenter click", followCursor: "initial",  delay: [tooltipDelay, null]});
+    tippy(".microRibbons path",  {trigger: "mouseenter click", allowHTML: true, followCursor: "initial",  delay: [tooltipDelay, null]});
 }
 
 
@@ -674,7 +674,7 @@ function plot_microSyntenyGenes(svg, myData, xScale, yaxis,
         .on("mouseover", function(){
             d3.select(this).transition()
                 .duration(50)
-                .delay(600)
+                .delay(tooltipDelay)
                 .style("stroke-width", "2")
                 .style("stroke", "black");
         })
@@ -739,20 +739,20 @@ function createPath(svg, pathData, pathClass = "ribbons"){
   pathGroup.selectAll("path")
         .on("mouseover", function(){
             d3.select(this).transition()
-                .delay(600)
+                .delay(tooltipDelay)
                 .duration(50)
                 .style("fill-opacity", 0.86);
             let sourceRectID = this.__data__.source.id;
             let targetRectID = this.__data__.target.id;
             d3.select("#" + sourceRectID)
                 .transition()
-                .delay(600)
+                .delay(tooltipDelay)
                 .duration(50)
                 .style("stroke-width", "2")
                 .style("stroke", "black");
             d3.select("#" + targetRectID)
                 .transition()
-                .delay(600)
+                .delay(tooltipDelay)
                 .duration(50)
                 .style("stroke-width", "2")
                 .style("stroke", "black");
@@ -1006,7 +1006,7 @@ function generate_microSytenySVG(inputRegionData, inputSubjectBedData,
         .translateExtent([[0, -Infinity], [width, Infinity]])
         .on("zoom", zoomed)
         .on("end", function(){
-            tippy("." + ribbonClass + " path",  {trigger: "mouseenter click", allowHTML: true, followCursor: "initial",  delay: [600, null]});
+            tippy("." + ribbonClass + " path",  {trigger: "mouseenter click", allowHTML: true, followCursor: "initial",  delay: [tooltipDelay, null]});
         });
 
     svg.call(zoom);
@@ -1112,9 +1112,9 @@ function plot_searchMicroSynteny(x){
     d3.select("#geneSearch_microSynteny")
         .append(() => svg.node());
 
-    tippy(".searchSyntenyQueryGroup rect",  {trigger: "mouseenter click", allowHTML: true, followCursor: "initial",  delay: [600, null]});
-    tippy(".searchSyntenySubjectGroup rect",  {trigger: "mouseenter click", allowHTML: true, followCursor: "initial",  delay: [600, null]});
-    tippy(".searchSyntenyRibbons path",  {trigger: "mouseenter click", allowHTML: true, followCursor: "initial",  delay: [600, null]});
+    tippy(".searchSyntenyQueryGroup rect",  {trigger: "mouseenter click", allowHTML: true, followCursor: "initial",  delay: [tooltipDelay, null]});
+    tippy(".searchSyntenySubjectGroup rect",  {trigger: "mouseenter click", allowHTML: true, followCursor: "initial",  delay: [tooltipDelay, null]});
+    tippy(".searchSyntenyRibbons path",  {trigger: "mouseenter click", allowHTML: true, followCursor: "initial",  delay: [tooltipDelay, null]});
 
     // update download link
     downloadSVG("search_microSynteny_download", "geneSearch_microSynteny");
@@ -1210,9 +1210,9 @@ Shiny.addCustomMessageHandler("center_microSynteny", function(inputShinyData){
     d3.select("#microSyntenyBlock")
         .append(() => microSVG.node());
     // Add tooltips
-    tippy(".microQueryGroup rect",  {trigger: "mouseenter click", followCursor: "initial",  delay: [600, null]});
-    tippy(".microSubjectGroup rect",  {trigger: "mouseenter click", followCursor: "initial",  delay: [600, null]});
-    tippy(".microRibbons path",  {trigger: "mouseenter click", allowHTML: true, followCursor: "initial",  delay: [600, null]});
+    tippy(".microQueryGroup rect",  {trigger: "mouseenter click", followCursor: "initial",  delay: [tooltipDelay, null]});
+    tippy(".microSubjectGroup rect",  {trigger: "mouseenter click", followCursor: "initial",  delay: [tooltipDelay, null]});
+    tippy(".microRibbons path",  {trigger: "mouseenter click", allowHTML: true, followCursor: "initial",  delay: [tooltipDelay, null]});
 
     // Move brush
     d3.select("#geneDensityBlock")
