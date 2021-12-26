@@ -203,13 +203,17 @@ observeEvent(input$marcoSynteny, {
             filter(q_GeneChr %in% input$synteny_query_chr) %>%
             arrange(q_GeneChr, q_GeneStart)
 
-        queryBedSummarized <- summarizeBed(synteny$queryBed)
-        subjectBedSummarized <- summarizeBed(synteny$subjectBed)
-
-        session$sendCustomMessage(type = "queryBedData", queryBedSummarized)
-        session$sendCustomMessage(type = "subjectBedData", subjectBedSummarized)
-        session$sendCustomMessage(type = "ribbonData", anchor_simple)
-        session$sendCustomMessage(type = "plotSynteny", "")
+        queryChrInfo <- summarizeChrInfo(synteny$queryBed)
+        subjectChrInfo <- summarizeChrInfo(synteny$subjectBed)
+        plotMode <- "circular"
+        ## Generate macro_synteny_data
+        macro_synteny_data <- list(
+            "queryChrInfo" = queryChrInfo,
+            "subjectChrInfo" = subjectChrInfo,
+            "ribbon" = anchor_simple,
+            "plotMode" = plotMode
+        )
+        session$sendCustomMessage(type = "plotMacroSynteny", macro_synteny_data)
         ##macroSynteny_waiter$hide()
     }
 })

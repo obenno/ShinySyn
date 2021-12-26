@@ -9,7 +9,7 @@ downloadButton_custom <- function (outputId, label = "Download", class = NULL, s
                    icon, label, ...)
 }
 
-summarizeBed <- function(inputBed){
+summarizeChrInfo <- function(inputBed){
     ## summarize input bed tibble to generate
     ## chr start, end and length
     summarizedBed <- inputBed %>%

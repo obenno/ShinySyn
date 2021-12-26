@@ -13,7 +13,8 @@ var fontSize = 10;
 var outerRadius = Math.min(width, height) * 0.5 - 60;
 var innerRadius = outerRadius - 10;
 var padAngle = 5 / innerRadius;
-var tooltipDelay = 1000; // tooltip delay time in miliseconds
+var tooltipDelay = 800; // tooltip delay time in miliseconds
+var formatValue = d3.format(".1~s");
 
 // microSynteny dimension parameters
 var heatmapMargin = ({top: 10, right: 0, bottom: 20, left: 0});
@@ -24,73 +25,308 @@ var heatmapHeight = 30; // heatmap rectangle height
 //var querySyntenyY = microSyntenyMargin.top + 40 + 10;
 //var subjectSyntenyY = microSyntenyHeight - microSyntenyMargin.bottom - 50;
 
+Shiny.addCustomMessageHandler("plotMacroSynteny", plotMacroSynteny);
 
-var queryBedSummarized = null;
-var queryPlotData = null;
-var queryAngleScale = null;
-var queryTickStep = null;
-Shiny.addCustomMessageHandler("queryBedData", function(inputShinyData){
-    queryBedSummarized = convertShinyData(inputShinyData);
-    queryPlotData = get_plotData(queryBedSummarized, Math.PI, 2*Math.PI);
-    queryTickStep = d3.tickStep(0, d3.sum(queryPlotData.map(e => e.value)), 40);
-});
+function plotMacroSynteny(macroSyntenyData){
 
-var subjectBedSummarized = null;
-var subjectPlotData = null;
-var subjectAngleScale = null;
-var subjectTickStep = null;
-Shiny.addCustomMessageHandler("subjectBedData", function(inputShinyData){
-    subjectBedSummarized = convertShinyData(inputShinyData);
-    subjectPlotData = get_plotData(subjectBedSummarized, 0, Math.PI);
-    subjectTickStep = d3.tickStep(0, d3.sum(subjectPlotData.map(e => e.value)), 40);
-});
+    console.log(macroSyntenyData);
 
-var ribbonData = null;
-Shiny.addCustomMessageHandler("ribbonData", function(inputShinyData){
-    ribbonData = convertShinyData(inputShinyData);
+    var queryChrInfo = convertShinyData(macroSyntenyData.queryChrInfo);
+    var subjectChrInfo = convertShinyData(macroSyntenyData.subjectChrInfo);
+    var ribbonData = convertShinyData(macroSyntenyData.ribbon);
 
-    ribbonData.forEach((d) => {
-        d.ribbonAngle = {};
-        let sourceChr = queryPlotData.filter(e => e.data.chr === d.queryChr)[0];
-        let targetChr = subjectPlotData.filter(e => e.data.chr === d.subjectChr)[0];
+    // create svg node
+    const svg = d3.create("svg");
+        //.attr("viewBox", [-width / 2, -height / 2, width, height]);
 
-        const x = d3.scaleLinear()
-              .domain([sourceChr.data.start, sourceChr.data.end])
-              .range([sourceChr.startAngle+sourceChr.padAngle/2,
-                      sourceChr.endAngle-sourceChr.padAngle/2]);
+    console.log(queryChrInfo);
+    
+    // Define colors
+    var colors = d3.quantize(d3.interpolateRgb.gamma(2.2)("#ca0020", "#0571b0"),
+                             queryChrInfo.length + subjectChrInfo.length);
 
-        const y = d3.scaleLinear()
-              .domain([targetChr.data.start, targetChr.data.end])
-              .range([targetChr.startAngle+targetChr.padAngle/2,
-                      targetChr.endAngle-targetChr.padAngle/2]);
+    if(macroSyntenyData.plotMode === "circular"){
+        // cirular plot codes
 
-        const sourceOutAngle = {startAngle: x(d.queryStart),
-                                endAngle: x(d.queryEnd)};
+        // prepare necessary data
+        queryChrInfo = calc_circular_angle(queryChrInfo, Math.PI, 2*Math.PI);
+        queryTickStep = d3.tickStep(0, d3.sum(queryChrInfo.map(e => e.value)), 40);
+        subjectChrInfo = calc_circular_angle(subjectChrInfo, 0, Math.PI);
+        subjectTickStep = d3.tickStep(0, d3.sum(subjectChrInfo.map(e => e.value)), 40);
 
-        const targetOutAngle = {startAngle: y(d.subjectStart),
-                                endAngle: y(d.subjectEnd)};
+        ribbonData.forEach((d) => {
+            d.ribbonAngle = {};
+            let sourceChr = queryChrInfo.filter(e => e.data.chr === d.queryChr)[0];
+            let targetChr = subjectChrInfo.filter(e => e.data.chr === d.subjectChr)[0];
 
-        if(d.orientation === "+"){
-            d.ribbonAngle = {
-                source: {startAngle: sourceOutAngle.startAngle, endAngle: sourceOutAngle.endAngle},
-                target: {startAngle: targetOutAngle.startAngle, endAngle: targetOutAngle.endAngle}
-            };
-        }else{
-            d.ribbonAngle = {
-                source: {startAngle: sourceOutAngle.startAngle, endAngle: sourceOutAngle.endAngle},
-                target: {startAngle: targetOutAngle.endAngle, endAngle: targetOutAngle.startAngle}
-            };
-        }
-    });
-    console.log(ribbonData);
-});
+            const x = d3.scaleLinear()
+                  .domain([sourceChr.data.start, sourceChr.data.end])
+                  .range([sourceChr.startAngle+sourceChr.padAngle/2,
+                          sourceChr.endAngle-sourceChr.padAngle/2]);
 
+            const y = d3.scaleLinear()
+                  .domain([targetChr.data.start, targetChr.data.end])
+                  .range([targetChr.startAngle+targetChr.padAngle/2,
+                          targetChr.endAngle-targetChr.padAngle/2]);
 
-Shiny.addCustomMessageHandler("plotSynteny", plotSynteny);
+            const sourceOutAngle = {startAngle: x(d.queryStart),
+                                    endAngle: x(d.queryEnd)};
 
-var formatValue = d3.format(".1~s");
+            const targetOutAngle = {startAngle: y(d.subjectStart),
+                                    endAngle: y(d.subjectEnd)};
 
-function get_plotData(inputBedSummarizedData, startAngle, endAngle){
+            if(d.orientation === "+"){
+                d.ribbonAngle = {
+                    source: {startAngle: sourceOutAngle.startAngle, endAngle: sourceOutAngle.endAngle},
+                    target: {startAngle: targetOutAngle.startAngle, endAngle: targetOutAngle.endAngle}
+                };
+            }else{
+                d.ribbonAngle = {
+                    source: {startAngle: sourceOutAngle.startAngle, endAngle: sourceOutAngle.endAngle},
+                    target: {startAngle: targetOutAngle.endAngle, endAngle: targetOutAngle.startAngle}
+                };
+            }
+        });
+
+        // Arc generator function
+        var arc = d3.arc()
+            .innerRadius(innerRadius)
+            .outerRadius(outerRadius);
+
+        // create viewBox of svg
+        svg.attr("viewBox", [-width / 2, -height / 2, width, height]);
+
+        const queryGroup = svg.append("g")
+              .attr("class", "macroQueryArc")
+              .attr("font-size", fontSize)
+              .attr("font-family", "sans-serif")
+              .selectAll("g")
+              .data(queryChrInfo)
+              .join("g");
+
+        queryGroup.append("path")
+            .attr("fill", d => colors[d.index])
+            .attr("d", d => arc(d))
+            .attr("data-tippy-content", d => "Query: " + d.data.chr);
+        // group.append("title")
+        //     .text(d => d.data.chr);
+
+        // Add hiden arc path for labels
+        // Idea is from https://www.visualcinnamon.com/2015/09/placing-text-on-arcs/
+        queryGroup.append("path")
+            .attr("id", d => "queryGroup" + d.index)
+            .attr("fill", "none")
+            .attr("d", (d) => {
+                let pathRegex = /(^.+?)L/;
+                let newArc = pathRegex.exec( arc(d) )[1];
+                //Replace all the commas so that IE can handle it
+                newArc = newArc.replace(/,/g , " ");
+                //flip the end and start position
+                if (d.endAngle > 90 * Math.PI/180 && d.endAngle < 270 * Math.PI/180) {
+                    //Everything between the capital M and first capital A
+                    let startLoc = /M(.*?)A/;
+                    //Everything between the capital A and 0 0 1
+                    let middleLoc = /A(.*?)0 0 1/;
+                    //Everything between the 0 0 1 and the end of the string (denoted by $)
+                    let endLoc = /0 0 1 (.*?)$/;
+                    //Flip the direction of the arc by switching the start and end point
+                    //and using a 0 (instead of 1) sweep flag
+                    let newStart = endLoc.exec( newArc )[1];
+                    let newEnd = startLoc.exec( newArc )[1];
+                    let middleSec = middleLoc.exec( newArc )[1];
+
+                    //Build up the new arc notation, set the sweep-flag to 0
+                    newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
+                }
+                return newArc;
+            });
+
+        queryGroup.append("text")
+            .attr("dy", function(d,i) {
+                return (d.endAngle > 90 * Math.PI/180 && d.endAngle < 270 * Math.PI/180 ? 35 : -28);
+            })
+            .append("textPath")
+            .attr("startOffset","50%")
+            .style("text-anchor","middle")
+            .attr("xlink:href",d => "#queryGroup" + d.index)
+            .text(d => d.data.chr);
+
+        const queryGroupTick = queryGroup.append("g")
+              .selectAll("g")
+              .data(queryTicks)
+              .join("g")
+              .attr("transform", d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`);
+
+        queryGroupTick.append("line")
+            .attr("stroke", "currentColor")
+            .attr("x2", 4);
+
+        queryGroupTick.append("text")
+            .attr("x", 11)
+            .attr("dy", "0.35em")
+            .attr("transform", d => d.angle > Math.PI ? "rotate(180) translate(-16)" : null)
+            .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
+            .text(d => formatValue(d.value))
+            .attr("font-size", "8")
+            .attr("font-family", "sans-serif");
+
+        const subjectGroup = svg.append("g")
+            .attr("class", "macroSubjectArc")
+            .attr("font-size", fontSize)
+            .attr("font-family", "sans-serif")
+            .selectAll("g")
+            .data(subjectChrInfo)
+            .join("g");
+
+        subjectGroup.append("path")
+            .attr("fill", d => colors[queryChrInfo.length + subjectChrInfo.length - d.index -1 ])
+            .attr("d", arc)
+            .attr("data-tippy-content", d => "Subject: " + d.data.chr);
+        // subjectGroup.append("title")
+        //     .text(d => d.data.chr);
+
+        // Add labels for group2
+        subjectGroup.append("path")
+            .attr("id", d => "subjectGroup" + d.index)
+            .attr("fill", "none")
+            .attr("d", (d) => {
+                let pathRegex = /(^.+?)L/;
+                let newArc = pathRegex.exec( arc(d) )[1];
+                //Replace all the commas so that IE can handle it
+                newArc = newArc.replace(/,/g , " ");
+                //flip the end and start position
+                if (d.endAngle > 90 * Math.PI/180 && d.endAngle < 270 * Math.PI/180) {
+                    //Everything between the capital M and first capital A
+                    let startLoc = /M(.*?)A/;
+                    //Everything between the capital A and 0 0 1
+                    let middleLoc = /A(.*?)0 0 1/;
+                    //Everything between the 0 0 1 and the end of the string (denoted by $)
+                    let endLoc = /0 0 1 (.*?)$/;
+                    //Flip the direction of the arc by switching the start and end point
+                    //and using a 0 (instead of 1) sweep flag
+                    let newStart = endLoc.exec( newArc )[1];
+                    let newEnd = startLoc.exec( newArc )[1];
+                    let middleSec = middleLoc.exec( newArc )[1];
+
+                    //Build up the new arc notation, set the sweep-flag to 0
+                    newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
+                }
+                return newArc;
+            });
+
+        subjectGroup.append("text")
+            .attr("dy", function(d, i){
+                return (d.endAngle > 90 * Math.PI/180 && d.endAngle < 270 * Math.PI/180 ? 35 : -28);
+            })
+            .append("textPath")
+            .attr("startOffset","50%")
+            .style("text-anchor","middle")
+            .attr("xlink:href",d => "#subjectGroup" + d.index)
+            .text(d => d.data.chr);
+
+        const subjectGroupTick = subjectGroup.append("g")
+            .selectAll("g")
+            .data(subjectTicks)
+            .join("g")
+            .attr("transform", d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`);
+
+        subjectGroupTick.append("line")
+            .attr("stroke", "currentColor")
+            .attr("x2", 4);
+
+        subjectGroupTick.append("text")
+            .attr("x", 5)
+            .attr("dy", "0.35em")
+            .attr("transform", d => d.angle > Math.PI ? "rotate(180) translate(-16)" : null)
+            .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
+            .text(d => formatValue(d.value))
+            .attr("font-size", "8")
+            .attr("font-family", "sans-serif");
+
+        const ribbons = svg.append("g")
+              .attr("class", "macroRibbons")
+              .selectAll("g")
+              .data(ribbonData)
+              .join("g");
+
+        ribbons.append("path")
+            .attr("fill", "grey")
+            .attr("opacity", 0.6)
+            .attr("d", d => ribbon(d.ribbonAngle))
+            .attr("data-tippy-content", d => {
+                return "<b>Query:</b> " + d.q_startGene + " : " + d.q_endGene +
+                    "&#8594" +
+                    "<b>Subject:</b> " + d.s_startGene + " : " + d.s_endGene;
+            })  // Add tippy data attr
+            .on("mouseover", function(){
+                d3.select(this)
+                    .transition()
+                    .delay(tooltipDelay)
+                    .duration(50)
+                    .style("fill", "red");
+            })
+            .on("mouseout", function(){
+                d3.select(this)
+                    .transition()
+                    .duration(50)
+                    .style("fill", "grey");
+            })
+            .on("click", function(){
+                const data = d3.select(this)
+                      .data();
+                const q_startGene = data[0].q_startGene;
+                const q_endGene = data[0].q_endGene;
+                const s_startGene = data[0].s_startGene;
+                const s_endGene = data[0].s_endGene;
+                Shiny.setInputValue("selectedRegion_queryStartGene", q_startGene);
+                Shiny.setInputValue("selectedRegion_queryEndGene", q_endGene);
+                Shiny.setInputValue("selectedRegion_subjectStartGene", s_startGene);
+                Shiny.setInputValue("selectedRegion_subjectEndGene", s_endGene);
+            });
+    }
+
+    d3.select("#macroSyntenyBlock")
+        .select("svg").remove(); // remove svg first
+    d3.select("#geneDensityBlock")
+        .select("svg").remove(); // remove geneDensity plot
+    d3.select("#microSyntenyBlock")
+        .select("svg").remove(); // remove microSynteny also
+    d3.select("#macroSyntenyBlock")
+        .append(() => svg.node());
+
+    // Add labels, and adjust their position
+    if(macroSyntenyData.plotMode === "circular"){
+        const querySyntenyLabel = svg.append("text")
+          .attr("class", "querySyntenyLabel")
+          .attr("font-size", 18)
+          .attr("font-family", "sans-serif")
+          //.attr("font-weight", "bold")
+          .text("Query")
+          .attr("transform", `translate(${-width / 2}, ${40-height / 2})`);
+
+        const subjectSyntenyLabel = svg.append("text")
+          .attr("class", "subjectSyntenyLabel")
+          .attr("font-size", 18)
+          .attr("font-family", "sans-serif")
+          //.attr("font-weight", "bold")
+          .text("Subject");
+        let subjetLabelWidth = svg.select(".subjectSyntenyLabel").node()
+            .getComputedTextLength();
+
+        subjectSyntenyLabel
+            .attr("transform", `translate(${width / 2-subjetLabelWidth}, ${40-height / 2})`);
+    }
+
+    // Activate tooltips
+    tippy(".macroQueryArc path", {trigger: "mouseenter click", followCursor: "initial", delay: [tooltipDelay, null]});
+    tippy(".macroSubjectArc path", {trigger: "mouseenter click", followCursor: "initial",  delay: [tooltipDelay, null]});
+    tippy(".macroRibbons path", {trigger: "mouseenter click", followCursor: "initial", allowHTML: true, delay: [tooltipDelay, null]});
+    // update svg download link
+    downloadSVG("marcoSynteny_download", "macroSyntenyBlock"); 
+}
+
+// use d3.pie() to calculate angles for all the arcs
+function calc_circular_angle(inputChrInfo, startAngle, endAngle){
     const arcs = d3.pie()
           .sort(null)
           .sortValues(null)
@@ -98,10 +334,11 @@ function get_plotData(inputBedSummarizedData, startAngle, endAngle){
           .endAngle(endAngle)
           .padAngle(padAngle)
           .value(d => d.chrLength)
-          (inputBedSummarizedData);
+          (inputChrInfo);
     return arcs;
 }
 
+// Covert shiny transferred data to desired format
 function convertShinyData(inObj){
     const properties = Object.keys(inObj);
 
@@ -115,248 +352,19 @@ function convertShinyData(inObj){
     return outArray;
 }
 
-function plotSynteny(x){
-    // Define colors
+// parallel marco synteny plot
+function plot_parallel_macroSynteny(){
     let colors = d3.quantize(d3.interpolateRgb.gamma(2.2)("#ca0020", "#0571b0"),
                              queryBedSummarized.length + subjectBedSummarized.length);
 
-    let arc = d3.arc()
-        .innerRadius(innerRadius)
-        .outerRadius(outerRadius);
-
+    //create svg
     const svg = d3.create("svg")
-          .attr("viewBox", [-width / 2, -height / 2, width, height]);
-
-    const queryGroup = svg.append("g")
-          .attr("class", "macroQueryArc")
-          .attr("font-size", fontSize)
-          .attr("font-family", "sans-serif")
-          .selectAll("g")
-          .data(queryPlotData)
-          .join("g");
-
-    queryGroup.append("path")
-        .attr("fill", d => colors[d.index])
-        .attr("d", d => arc(d))
-        .attr("data-tippy-content", d => "Query: " + d.data.chr);
-    // group.append("title")
-    //     .text(d => d.data.chr);
-
-    // Add hiden arc path for labels
-    // Idea is from https://www.visualcinnamon.com/2015/09/placing-text-on-arcs/
-    queryGroup.append("path")
-        .attr("id", d => "queryGroup" + d.index)
-        .attr("fill", "none")
-        .attr("d", (d) => {
-            let pathRegex = /(^.+?)L/;
-            var newArc = pathRegex.exec( arc(d) )[1];
-      //Replace all the commas so that IE can handle it
-      newArc = newArc.replace(/,/g , " ");
-      //flip the end and start position
-      if (d.endAngle > 90 * Math.PI/180 && d.endAngle < 270 * Math.PI/180) {
-        //Everything between the capital M and first capital A
-        var startLoc = /M(.*?)A/;
-        //Everything between the capital A and 0 0 1
-        var middleLoc = /A(.*?)0 0 1/;
-        //Everything between the 0 0 1 and the end of the string (denoted by $)
-        var endLoc = /0 0 1 (.*?)$/;
-        //Flip the direction of the arc by switching the start and end point
-        //and using a 0 (instead of 1) sweep flag
-        var newStart = endLoc.exec( newArc )[1];
-        var newEnd = startLoc.exec( newArc )[1];
-        var middleSec = middleLoc.exec( newArc )[1];
-
-        //Build up the new arc notation, set the sweep-flag to 0
-        newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
-      }
-      return newArc;
-        });
-
-    queryGroup.append("text")
-        .attr("dy", function(d,i) {
-            return (d.endAngle > 90 * Math.PI/180 && d.endAngle < 270 * Math.PI/180 ? 35 : -28);
-        })
-        .append("textPath")
-        .attr("startOffset","50%")
-        .style("text-anchor","middle")
-        .attr("xlink:href",d => "#queryGroup" + d.index)
-        .text(d => d.data.chr);
-
-    const queryGroupTick = queryGroup.append("g")
-          .selectAll("g")
-          .data(queryTicks)
-          .join("g")
-          .attr("transform", d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`);
-
-  queryGroupTick.append("line")
-    .attr("stroke", "currentColor")
-    .attr("x2", 4);
-
-  queryGroupTick.append("text")
-    .attr("x", 11)
-    .attr("dy", "0.35em")
-    .attr("transform", d => d.angle > Math.PI ? "rotate(180) translate(-16)" : null)
-    .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
-    .text(d => formatValue(d.value))
-    .attr("font-size", "8")
-    .attr("font-family", "sans-serif");
-
-    const subjectGroup = svg.append("g")
-          .attr("class", "macroSubjectArc")
-          .attr("font-size", fontSize)
-          .attr("font-family", "sans-serif")
-          .selectAll("g")
-          .data(subjectPlotData)
-          .join("g");
-
-    subjectGroup.append("path")
-        .attr("fill", d => colors[queryBedSummarized.length + subjectBedSummarized.length - d.index -1 ])
-        .attr("d", arc)
-        .attr("data-tippy-content", d => "Subject: " + d.data.chr);
-    // subjectGroup.append("title")
-    //     .text(d => d.data.chr);
-
-    // Add labels for group2
-    subjectGroup.append("path")
-        .attr("id", d => "subjectGroup" + d.index)
-        .attr("fill", "none")
-        .attr("d", (d) => {
-            let pathRegex = /(^.+?)L/;
-            var newArc = pathRegex.exec( arc(d) )[1];
-            //Replace all the commas so that IE can handle it
-            newArc = newArc.replace(/,/g , " ");
-            //flip the end and start position
-            if (d.endAngle > 90 * Math.PI/180 && d.endAngle < 270 * Math.PI/180) {
-                //Everything between the capital M and first capital A
-                var startLoc = /M(.*?)A/;
-                //Everything between the capital A and 0 0 1
-                var middleLoc = /A(.*?)0 0 1/;
-                //Everything between the 0 0 1 and the end of the string (denoted by $)
-                var endLoc = /0 0 1 (.*?)$/;
-                //Flip the direction of the arc by switching the start and end point
-                //and using a 0 (instead of 1) sweep flag
-                var newStart = endLoc.exec( newArc )[1];
-                var newEnd = startLoc.exec( newArc )[1];
-                var middleSec = middleLoc.exec( newArc )[1];
-
-                //Build up the new arc notation, set the sweep-flag to 0
-                newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
-            }
-            return newArc;
-        });
-
-    subjectGroup.append("text")
-        .attr("dy", function(d, i){
-            return (d.endAngle > 90 * Math.PI/180 && d.endAngle < 270 * Math.PI/180 ? 35 : -28);
-        })
-        .append("textPath")
-        .attr("startOffset","50%")
-        .style("text-anchor","middle")
-        .attr("xlink:href",d => "#subjectGroup" + d.index)
-        .text(d => d.data.chr);
-
-    const subjectGroupTick = subjectGroup.append("g")
-          .selectAll("g")
-          .data(subjectTicks)
-          .join("g")
-          .attr("transform", d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`);
-
-    subjectGroupTick.append("line")
-        .attr("stroke", "currentColor")
-        .attr("x2", 4);
-
-    subjectGroupTick.append("text")
-        .attr("x", 5)
-        .attr("dy", "0.35em")
-        .attr("transform", d => d.angle > Math.PI ? "rotate(180) translate(-16)" : null)
-        .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
-        .text(d => formatValue(d.value))
-        .attr("font-size", "8")
-        .attr("font-family", "sans-serif");
-
-    const ribbons = svg.append("g")
-          .attr("class", "macroRibbons")
-          .selectAll("g")
-          .data(ribbonData)
-          .join("g");
-
-    ribbons.append("path")
-        .attr("fill", "grey")
-        .attr("opacity", 0.6)
-        .attr("d", d => ribbon(d.ribbonAngle))
-        .attr("data-tippy-content", d => {
-            return "<b>Query:</b> " + d.q_startGene + " : " + d.q_endGene +
-                "&#8594" +
-                "<b>Subject:</b> " + d.s_startGene + " : " + d.s_endGene;
-        })  // Add tippy data attr
-        .on("mouseover", function(){
-            d3.select(this)
-                .transition()
-                .delay(tooltipDelay)
-                .duration(50)
-                .style("fill", "red");
-        })
-        .on("mouseout", function(){
-            d3.select(this)
-                .transition()
-                .duration(50)
-                .style("fill", "grey");
-        })
-        .on("click", function(){
-            const data = d3.select(this)
-                  .data();
-            const q_startGene = data[0].q_startGene;
-            const q_endGene = data[0].q_endGene;
-            const s_startGene = data[0].s_startGene;
-            const s_endGene = data[0].s_endGene;
-            Shiny.setInputValue("selectedRegion_queryStartGene", q_startGene);
-            Shiny.setInputValue("selectedRegion_queryEndGene", q_endGene);
-            Shiny.setInputValue("selectedRegion_subjectStartGene", s_startGene);
-            Shiny.setInputValue("selectedRegion_subjectEndGene", s_endGene);
-        });
-
-
-
-    d3.select("#macroSyntenyBlock")
-        .select("svg").remove(); // remove svg first
-    d3.select("#geneDensityBlock")
-        .select("svg").remove(); // remove geneDensity plot
-    d3.select("#microSyntenyBlock")
-        .select("svg").remove(); // remove microSynteny also
-    d3.select("#macroSyntenyBlock")
-        .append(() => svg.node());
-
-    // Add label
-    const querySyntenyLabel = svg.append("text")
-          .attr("class", "querySyntenyLabel")
-          .attr("font-size", 18)
-          .attr("font-family", "sans-serif")
-          //.attr("font-weight", "bold")
-          .text("Query")
-          .attr("transform", `translate(${-width / 2}, ${40-height / 2})`);
-
-
-    const subjectSyntenyLabel = svg.append("text")
-          .attr("class", "subjectSyntenyLabel")
-          .attr("font-size", 18)
-          .attr("font-family", "sans-serif")
-          //.attr("font-weight", "bold")
-          .text("Subject");
-    let subjetLabelWidth = svg.select(".subjectSyntenyLabel").node()
-        .getComputedTextLength();
-    subjectSyntenyLabel
-        .attr("transform", `translate(${width / 2-subjetLabelWidth}, ${40-height / 2})`);
-
-    // Activate tooltips
-    tippy(".macroQueryArc path", {trigger: "mouseenter click", followCursor: "initial", delay: [tooltipDelay, null]});
-    tippy(".macroSubjectArc path", {trigger: "mouseenter click", followCursor: "initial",  delay: [tooltipDelay, null]});
-    tippy(".macroRibbons path", {trigger: "mouseenter click", followCursor: "initial", allowHTML: true, delay: [tooltipDelay, null]});
-    // update svg download link
-    downloadSVG("marcoSynteny_download", "macroSyntenyBlock"); 
+        .attr("viewBox", [-width / 2, -height / 2, width, height]);
 }
 
 
 function queryTicks({startAngle, endAngle, value, padAngle}) {
+    // prepare data for query ticks
   const k = (endAngle - startAngle - padAngle) / value;
   return d3.range(0, value, queryTickStep).map(value => {
     return {value, angle: value * k + startAngle + padAngle/2};
@@ -364,6 +372,7 @@ function queryTicks({startAngle, endAngle, value, padAngle}) {
 }
 
 function subjectTicks({startAngle, endAngle, value, padAngle}) {
+    // prepare data for subject ticks
   const k = (endAngle - startAngle - padAngle) / value;
   return d3.range(0, value, subjectTickStep).map(value => {
     return {value, angle: value * k + startAngle + padAngle/2};
