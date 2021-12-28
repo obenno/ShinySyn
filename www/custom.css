@@ -29,8 +29,8 @@ body {
     margin-right: 10px;
     margin-left: 10px;
     background-color: #ABBAEA;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 1rem;
+    padding-right: 1rem;
     border: 3px solid black;
     border-radius: 15px;
 }
@@ -39,6 +39,6 @@ body {
     margin-top: 15px;
     margin-right: 10px;
     margin-left: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 1rem;
+    padding-right: 1rem;
 }
