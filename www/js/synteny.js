@@ -1,11 +1,3 @@
-//Shiny.addCustomMessageHandler("plotSynteny", plotSynteny);
-
-// const processBedData = function(shinyBedData){
-//     console.log(shinyBedData);
-// }
-// 
-// Shiny.addCustomMessageHandler("bedData", processBedData);
-
 // Define plots parameters
 var width =  800;
 var height = width; // macroSynteny height
@@ -29,18 +21,18 @@ Shiny.addCustomMessageHandler("plotMacroSynteny", plotMacroSynteny);
 
 function plotMacroSynteny(macroSyntenyData){
 
-    console.log(macroSyntenyData);
-
     var queryChrInfo = convertShinyData(macroSyntenyData.queryChrInfo);
     var subjectChrInfo = convertShinyData(macroSyntenyData.subjectChrInfo);
     var ribbonData = convertShinyData(macroSyntenyData.ribbon);
+
+    console.log(queryChrInfo);
+    console.log(subjectChrInfo);
+    console.log(ribbonData);
 
     // create svg node
     const svg = d3.create("svg");
         //.attr("viewBox", [-width / 2, -height / 2, width, height]);
 
-    console.log(queryChrInfo);
-    
     // Define colors
     var colors = d3.quantize(d3.interpolateRgb.gamma(2.2)("#ca0020", "#0571b0"),
                              queryChrInfo.length + subjectChrInfo.length);
@@ -278,11 +270,21 @@ function plotMacroSynteny(macroSyntenyData){
                 const q_endGene = data[0].q_endGene;
                 const s_startGene = data[0].s_startGene;
                 const s_endGene = data[0].s_endGene;
-                Shiny.setInputValue("selectedRegion_queryStartGene", q_startGene);
-                Shiny.setInputValue("selectedRegion_queryEndGene", q_endGene);
-                Shiny.setInputValue("selectedRegion_subjectStartGene", s_startGene);
-                Shiny.setInputValue("selectedRegion_subjectEndGene", s_endGene);
+                Shiny.setInputValue("selected_macroRegion",
+                                    {
+                                        "q_startGene": q_startGene,
+                                        "q_endGene": q_endGene,
+                                        "s_startGene": s_startGene,
+                                        "s_endGene": s_endGene
+                                    }
+                                   );
+                //Shiny.setInputValue("selectedRegion_queryEndGene", q_endGene);
+                //Shiny.setInputValue("selectedRegion_subjectStartGene", s_startGene);
+                //Shiny.setInputValue("selectedRegion_subjectEndGene", s_endGene);
             });
+
+    }else if(macroSyntenyData.plotMode === "parallel"){
+        
     }
 
     d3.select("#macroSyntenyBlock")
@@ -427,30 +429,17 @@ function ribbonCustom(d, radius, padAngle) {
   return p._;
 }
 
-var micro_queryBed = null;
-Shiny.addCustomMessageHandler("selectedQueryRegion", function(inputShinyData){
-    micro_queryBed = convertShinyData(inputShinyData);
-});
+Shiny.addCustomMessageHandler("plotSelectedMicroSynteny", plotSelectedMicroSynteny);
 
+var regionData = [];
 var micro_subjectBed = null;
-Shiny.addCustomMessageHandler("selectedSubjectRegion", function(inputShinyData){
-    micro_subjectBed = convertShinyData(inputShinyData);
-});
-
-var micro_anchors = null;
-Shiny.addCustomMessageHandler("microAnchors", function(inputShinyData){
-    micro_anchors = convertShinyData(inputShinyData);
-});
-
-
-// Init some data used outside of plotSelecedMicroSynteny
-// by center_microSynteny
-var regionData = null;
-var hScale = null;
 var brush = null;
-Shiny.addCustomMessageHandler("plotSelecedMicroSynteny", plotSelecedMicroSynteny);
+var hScale = null;
 
-function plotSelecedMicroSynteny(x){
+function plotSelectedMicroSynteny(microSyntenyData){
+    var micro_queryBed = convertShinyData(microSyntenyData.microQueryRegion);
+    micro_subjectBed = convertShinyData(microSyntenyData.microSubjectRegion);
+    var micro_anchors = convertShinyData(microSyntenyData.microAnchors);
     let regionStart = micro_queryBed[0].start;
     let regionEnd = micro_queryBed[micro_queryBed.length-1].end;
     let regionLength = regionEnd - regionStart + 1;
@@ -1179,14 +1168,13 @@ function downloadSVG(downloadButtonID, svgDivID){
     });
 }
 
-var selectedQueryGene = null;
-Shiny.addCustomMessageHandler("center_microSynteny", function(inputShinyData){
-    selectedQueryGene = inputShinyData;
+Shiny.addCustomMessageHandler("center_microSynteny", function(selectedQueryGene){
+    //var selectedQueryGene = selectedQueryGene;
     console.log(selectedQueryGene);
     let selectedRegionDataIdx = null;
     let selectedIdxAll = [];
     regionData.forEach((e,i) => {
-        if(e.queryGenes.some(d => d.gene === selectedQueryGene)){
+        if(e.queryGenes.some((d) => d.gene === selectedQueryGene)){
             selectedRegionDataIdx = i;
         }
     });

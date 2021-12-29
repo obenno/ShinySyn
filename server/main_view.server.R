@@ -218,23 +218,28 @@ observeEvent(input$marcoSynteny, {
     }
 })
 
-observeEvent(input$selectedRegion_queryStartGene, {
+observeEvent(input$selected_macroRegion, {
 
-    idx1 <- rownames(synteny$queryBed)[ synteny$queryBed$gene == input$selectedRegion_queryStartGene] %>%
+    selectedRegion_queryStartGene <- input$selected_macroRegion[["q_startGene"]]
+    selectedRegion_queryEndGene <- input$selected_macroRegion[["q_endGene"]]
+    selectedRegion_subjectStartGene <- input$selected_macroRegion[["s_startGene"]]
+    selectedRegion_subjectEndGene <- input$selected_macroRegion[["s_endGene"]]
+
+    idx1 <- rownames(synteny$queryBed)[ synteny$queryBed$gene == selectedRegion_queryStartGene] %>%
         as.numeric()
-    idx2 <- rownames(synteny$queryBed)[ synteny$queryBed$gene == input$selectedRegion_queryEndGene] %>%
+    idx2 <- rownames(synteny$queryBed)[ synteny$queryBed$gene == selectedRegion_queryEndGene] %>%
         as.numeric()
     synteny$selectedQueryRegion <- synteny$queryBed %>% slice(idx1: idx2)
 
-    idx1 <- rownames(synteny$anchor_full)[ synteny$anchor_full$q_Gene == input$selectedRegion_queryStartGene] %>%
+    idx1 <- rownames(synteny$anchor_full)[ synteny$anchor_full$q_Gene == selectedRegion_queryStartGene] %>%
         as.numeric()
-    idx2 <- rownames(synteny$anchor_full)[ synteny$anchor_full$q_Gene == input$selectedRegion_queryEndGene] %>%
+    idx2 <- rownames(synteny$anchor_full)[ synteny$anchor_full$q_Gene == selectedRegion_queryEndGene] %>%
         as.numeric()
     synteny$selectedAnchors <- synteny$anchor_full %>% slice(idx1: idx2)
 
-    idx1 <- rownames(synteny$subjectBed)[ synteny$subjectBed$gene == input$selectedRegion_subjectStartGene] %>%
+    idx1 <- rownames(synteny$subjectBed)[ synteny$subjectBed$gene == selectedRegion_subjectStartGene] %>%
         as.numeric()
-    idx2 <- rownames(synteny$subjectBed)[ synteny$subjectBed$gene == input$selectedRegion_subjectEndGene] %>%
+    idx2 <- rownames(synteny$subjectBed)[ synteny$subjectBed$gene == selectedRegion_subjectEndGene] %>%
         as.numeric()
     synteny$selectedSubjectRegion <- synteny$subjectBed %>% slice(idx1: idx2) %>%
         arrange(chr, start)
@@ -248,10 +253,15 @@ observeEvent(input$selectedRegion_queryStartGene, {
     ##synteny$selectedAnchors_filtered <- synteny$selectedAnchors %>%
     ##    filter(s_Gene %in% synteny$selectedSubjectRegion$gene)
 
-    session$sendCustomMessage(type = "selectedQueryRegion", synteny$selectedQueryRegion)
-    session$sendCustomMessage(type = "selectedSubjectRegion", synteny$selectedSubjectRegion)
-    session$sendCustomMessage(type = "microAnchors", synteny$selectedAnchors)
-    session$sendCustomMessage(type = "plotSelecedMicroSynteny", "")
+    micro_synteny_data <- list(
+        microQueryRegion = synteny$selectedQueryRegion,
+        microSubjectRegion = synteny$selectedSubjectRegion,
+        microAnchors = synteny$selectedAnchors
+    )
+    ## session$sendCustomMessage(type = "selectedQueryRegion", synteny$selectedQueryRegion)
+    ## session$sendCustomMessage(type = "selectedSubjectRegion", synteny$selectedSubjectRegion)
+    ## session$sendCustomMessage(type = "microAnchors", synteny$selectedAnchors)
+    session$sendCustomMessage(type = "plotSelectedMicroSynteny", micro_synteny_data)
 
     ##shinyjs::show("microSynteny_download")
 
@@ -259,6 +269,6 @@ observeEvent(input$selectedRegion_queryStartGene, {
 
 observeEvent(input$microAnchor_out_rows_selected, {
     selectedQueryGene <- synteny$selectedAnchors[input$microAnchor_out_rows_selected,] %>%
-        select(q_Gene) %>% pull()
+        pull(q_Gene)
     session$sendCustomMessage(type = "center_microSynteny", selectedQueryGene)
 })
