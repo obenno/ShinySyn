@@ -258,9 +258,7 @@ observeEvent(input$selected_macroRegion, {
         microSubjectRegion = synteny$selectedSubjectRegion,
         microAnchors = synteny$selectedAnchors
     )
-    ## session$sendCustomMessage(type = "selectedQueryRegion", synteny$selectedQueryRegion)
-    ## session$sendCustomMessage(type = "selectedSubjectRegion", synteny$selectedSubjectRegion)
-    ## session$sendCustomMessage(type = "microAnchors", synteny$selectedAnchors)
+
     session$sendCustomMessage(type = "plotSelectedMicroSynteny", micro_synteny_data)
 
     ##shinyjs::show("microSynteny_download")

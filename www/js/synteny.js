@@ -6,7 +6,7 @@ var outerRadius = Math.min(width, height) * 0.5 - 60;
 var innerRadius = outerRadius - 10;
 var padAngle = 5 / innerRadius;
 var tooltipDelay = 800; // tooltip delay time in miliseconds
-var formatValue = d3.format(".1~s");
+var formatValue = d3.format(".2~s");
 
 // microSynteny dimension parameters
 var heatmapMargin = ({top: 10, right: 0, bottom: 20, left: 0});
@@ -42,9 +42,25 @@ function plotMacroSynteny(macroSyntenyData){
 
         // prepare necessary data
         queryChrInfo = calc_circular_angle(queryChrInfo, Math.PI, 2*Math.PI);
-        queryTickStep = d3.tickStep(0, d3.sum(queryChrInfo.map(e => e.value)), 40);
+        console.log(queryChrInfo);
+        // prepare query tick data
+        var queryTickStep = d3.tickStep(0, d3.sum(queryChrInfo.map(e => e.value)), 40);
+        queryChrInfo.forEach((e) => {
+            const k = (e.endAngle - e.startAngle - e.padAngle) / e.value;
+            e.tickData = d3.range(0, e.value, queryTickStep).map(d => {
+                return {value: d, angle: d * k + e.startAngle + e.padAngle/2};
+            });
+        });
+
         subjectChrInfo = calc_circular_angle(subjectChrInfo, 0, Math.PI);
-        subjectTickStep = d3.tickStep(0, d3.sum(subjectChrInfo.map(e => e.value)), 40);
+        // prepare subject tick data
+        var subjectTickStep = d3.tickStep(0, d3.sum(subjectChrInfo.map(e => e.value)), 40);
+        subjectChrInfo.forEach((e) => {
+            const k = (e.endAngle - e.startAngle - e.padAngle) / e.value;
+            e.tickData = d3.range(0, e.value, subjectTickStep).map(d => {
+                return {value: d, angle: d * k + e.startAngle + e.padAngle/2};
+            });
+        });
 
         ribbonData.forEach((d) => {
             d.ribbonAngle = {};
@@ -144,10 +160,10 @@ function plotMacroSynteny(macroSyntenyData){
             .text(d => d.data.chr);
 
         const queryGroupTick = queryGroup.append("g")
-              .selectAll("g")
-              .data(queryTicks)
-              .join("g")
-              .attr("transform", d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`);
+            .selectAll("g")
+            .data(d => d.tickData)
+            .join("g")
+            .attr("transform", d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`);
 
         queryGroupTick.append("line")
             .attr("stroke", "currentColor")
@@ -218,7 +234,7 @@ function plotMacroSynteny(macroSyntenyData){
 
         const subjectGroupTick = subjectGroup.append("g")
             .selectAll("g")
-            .data(subjectTicks)
+            .data(d => d.tickData)
             .join("g")
             .attr("transform", d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`);
 
@@ -362,23 +378,6 @@ function plot_parallel_macroSynteny(){
     //create svg
     const svg = d3.create("svg")
         .attr("viewBox", [-width / 2, -height / 2, width, height]);
-}
-
-
-function queryTicks({startAngle, endAngle, value, padAngle}) {
-    // prepare data for query ticks
-  const k = (endAngle - startAngle - padAngle) / value;
-  return d3.range(0, value, queryTickStep).map(value => {
-    return {value, angle: value * k + startAngle + padAngle/2};
-  });
-}
-
-function subjectTicks({startAngle, endAngle, value, padAngle}) {
-    // prepare data for subject ticks
-  const k = (endAngle - startAngle - padAngle) / value;
-  return d3.range(0, value, subjectTickStep).map(value => {
-    return {value, angle: value * k + startAngle + padAngle/2};
-  });
 }
 
 function ribbon(d){
