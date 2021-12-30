@@ -82,6 +82,7 @@ observe({
 
 observeEvent(input$macroSynteny, {
 
+    output$microAnchor_out <- NULL
     if(is.null(queryBed()) || is.null(subjectBed())){
         shinyalert("Oops!", "query or subject BED file doesn't exist, please use MCscan pipeline first or upload your own BED file", type = "error")
     }else if(is.null(anchorFile()) || !file.exists(anchorFile())){
