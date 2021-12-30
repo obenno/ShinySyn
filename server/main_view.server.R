@@ -1,6 +1,9 @@
 ## Init synteny data as reactiveValues
 synteny <- reactiveValues()
 
+## create waiter
+mainView_waiter <- Waiter$new()
+
 ## Setup file path
 ## query BED file path
 queryBedFile <- reactive({
@@ -81,6 +84,9 @@ observe({
 })
 
 observeEvent(input$macroSynteny, {
+
+    ## show spinner
+    mainView_waiter$show()
 
     output$microAnchor_out <- NULL
     if(is.null(queryBed()) || is.null(subjectBed())){
@@ -215,7 +221,10 @@ observeEvent(input$macroSynteny, {
             "plotMode" = plotMode
         )
         session$sendCustomMessage(type = "plotMacroSynteny", macro_synteny_data)
-        ##macroSynteny_waiter$hide()
+
+        ## hide spinner
+        mainView_waiter$hide()
+
     }
 })
 

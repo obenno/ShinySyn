@@ -28,6 +28,7 @@ ui <- tagList(
         ),
     useShinyjs(),
     useShinyalert(),
+    useWaiter(),
     useWaitress(),
     navbarPage(
         theme = bs_theme(version = 5,bootswatch = "flatly"),
