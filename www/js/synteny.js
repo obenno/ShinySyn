@@ -25,9 +25,9 @@ function plotMacroSynteny(macroSyntenyData){
     var subjectChrInfo = convertShinyData(macroSyntenyData.subjectChrInfo);
     var ribbonData = convertShinyData(macroSyntenyData.ribbon);
 
-    console.log(queryChrInfo);
-    console.log(subjectChrInfo);
-    console.log(ribbonData);
+    //console.log(queryChrInfo);
+    //console.log(subjectChrInfo);
+    //console.log(ribbonData);
 
     // create svg node
     const svg = d3.create("svg");
@@ -430,14 +430,25 @@ function ribbonCustom(d, radius, padAngle) {
 
 Shiny.addCustomMessageHandler("plotSelectedMicroSynteny", plotSelectedMicroSynteny);
 
-var regionData = [];
+// regionData stores all the information for micro synteny
+var regionData = null;
+// bed data will be used by center queryGene function
+var micro_queryBed = null;
 var micro_subjectBed = null;
+// brush and hScale needs to be accessed by center micro synteny function
 var brush = null;
 var hScale = null;
 
 function plotSelectedMicroSynteny(microSyntenyData){
-    var micro_queryBed = convertShinyData(microSyntenyData.microQueryRegion);
+
+    micro_queryBed = convertShinyData(microSyntenyData.microQueryRegion);
+    // Add elementID for query data
+    micro_queryBed.forEach((e,i) => e.elementID = "queryGene_" + i);
+
     micro_subjectBed = convertShinyData(microSyntenyData.microSubjectRegion);
+    // Add elementID for subject data
+    micro_subjectBed.forEach((e,i) => e.elementID = "subjectGene_" + i);
+
     var micro_anchors = convertShinyData(microSyntenyData.microAnchors);
     let regionStart = micro_queryBed[0].start;
     let regionEnd = micro_queryBed[micro_queryBed.length-1].end;
@@ -475,10 +486,11 @@ function plotSelectedMicroSynteny(microSyntenyData){
     }
     // populate data into regionData
     regionData.forEach(d => {
-        micro_queryBed.forEach(e => {
+        micro_queryBed.forEach((e,i) => {
             if(e.start >= d.start && e.start <= d.end){
                 // Add elementID
-                e.elementID = e.gene.replace(/\./g, "_");
+                //e.elementID = e.gene.replace(/\./g, "_");
+                //e.elementID = "queryGene_" + i;
                 d.queryGenes.push(e);
             }
         });
@@ -491,8 +503,8 @@ function plotSelectedMicroSynteny(microSyntenyData){
                    d.pathData.push({
                        from: e.q_Gene,
                        to: e.s_Gene,
-                       sourceElementID: e.q_Gene.replace(/\./g, "_"),
-                       targetElementID: e.s_Gene.replace(/\./g, "_"),
+                       sourceElementID: "queryGene_" + micro_queryBed.findIndex(element => element.gene === e.q_Gene),
+                       targetElementID: "subjectGene_" + micro_subjectBed.findIndex(element => element.gene === e.s_Gene),
                        sourceStrand: e.q_GeneStrand,
                        targetStrand: e.s_GeneStrand
                    });
@@ -641,6 +653,7 @@ function plot_microSyntenyGenes(svg, myData, xScale, yaxis,
     //svg: d3 selected svg object
     //xScale: d3 scale of x axis
     //yaxis: y position of the plot in the svg object
+    // this function is used to generate either query or subject gene plot
     const g = svg.append("g")
             .attr("class", groupClass);
 
@@ -899,7 +912,7 @@ function generate_microSytenySVG(inputRegionData, inputSubjectBedData,
     //       start: 2290726,
     //       end: 2293596,
     //       strand: "-",
-    //       elementID: "Glyma_02G025600_1_Wm82_a2_v1"
+    //       elementID: "queryGene_{geneIndex}"
     //     },
     //     {...}
     // ]
@@ -929,7 +942,7 @@ function generate_microSytenySVG(inputRegionData, inputSubjectBedData,
                 start: d.start,
                 end: d.end,
                 strand: d.strand,
-                elementID: d.gene.replace(/\./g, "_"),
+                elementID: d.elementID
             });
         }
     });
@@ -1220,6 +1233,6 @@ Shiny.addCustomMessageHandler("center_microSynteny", function(selectedQueryGene)
                regionData[selectedIdxAll[selectedIdxAll.length-1]].end].map(hScale));
 
     // Highlight selected gene
-    d3.select("#" + selectedQueryGene.replace(/\./g, "_"))
+    d3.select("#" + "queryGene_" + micro_queryBed.findIndex(element => element.gene === selectedQueryGene))
         .style("fill", "#FF5733");
 });
