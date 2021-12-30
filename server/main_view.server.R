@@ -80,7 +80,7 @@ observe({
                        choices = x)
 })
 
-observeEvent(input$marcoSynteny, {
+observeEvent(input$macroSynteny, {
 
     if(is.null(queryBed()) || is.null(subjectBed())){
         shinyalert("Oops!", "query or subject BED file doesn't exist, please use MCscan pipeline first or upload your own BED file", type = "error")

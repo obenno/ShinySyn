@@ -148,7 +148,7 @@ tab1_ui <- tabPanel(
                              6,
                              div(class="float-left",
                                  actionButton(
-                                     inputId = "marcoSynteny",
+                                     inputId = "macroSynteny",
                                      status = "secondary",
                                      icon = icon("pagelines"),
                                      label = "View Macro Synteny"
