@@ -99,7 +99,7 @@ observeEvent(input$mcscan_go, {
     system(paste0("ln -s -f ", subject_bed, " ", tempdir(), "/", input$subject_species, ".bed"))
     system(paste0("ln -s -f ", query_cds, " ", tempdir(), "/", input$query_species, ".cds"))
     system(paste0("ln -s -f ", subject_cds, " ", tempdir(), "/", input$subject_species, ".cds"))
-    mcscan_cmd <- paste0("python -m jcvi.compara.catalog ortholog ", input$query_species, " ", input$subject_species, " --no_strip_names")
+    mcscan_cmd <- paste0("python -m jcvi.compara.catalog ortholog ", input$query_species, " ", input$subject_species, " --cscore=.99 --no_strip_names")
     ## Perform compare command
     system(paste0("cd ", tempdir(), ";", mcscan_cmd, " 2>&1"))
     waitress$close()
