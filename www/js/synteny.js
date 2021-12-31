@@ -450,6 +450,7 @@ function plotSelectedMicroSynteny(microSyntenyData){
     micro_subjectBed.forEach((e,i) => e.elementID = "subjectGene_" + i);
 
     var micro_anchors = convertShinyData(microSyntenyData.microAnchors);
+
     let regionStart = micro_queryBed[0].start;
     let regionEnd = micro_queryBed[micro_queryBed.length-1].end;
     let regionLength = regionEnd - regionStart + 1;
@@ -513,6 +514,12 @@ function plotSelectedMicroSynteny(microSyntenyData){
     });
     console.log(regionData);
 
+    // If too few genes, then no heatmap will be drawn, only genes
+    var querGeneNum = d3.sum(regionData.map(e => e.queryGenes.length));
+    // push selectedRegionData out of heatmap code
+    var selectedRegionData = regionData.slice(regionData.length - 4, regionData.length);
+
+    // Codes below is for generating heatmap with brushX
     let colorScale = d3.scaleSequential(d3.interpolatePurples)
         .domain([0, d3.max(regionData.map(d => d.queryGenes.length))]);
 
@@ -546,7 +553,6 @@ function plotSelectedMicroSynteny(microSyntenyData){
             .call(brush)
             .call(brush.move, defaultSelection);
 
-    let selectedRegionData = regionData.slice(regionData.length - 4, regionData.length);
 
     function brushended(event) {
         const selection = event.selection;
@@ -630,14 +636,18 @@ function plotSelectedMicroSynteny(microSyntenyData){
     d3.select("#microSyntenyBlock")
         .select("svg").remove();
 
+    console.log(selectedRegionData);
+    console.log(micro_subjectBed);
     const microSVG = generate_microSytenySVG(selectedRegionData, micro_subjectBed,
                                              microSyntenyHeight, microSyntenyMargin,
                                              "microQueryGroup",
                                              "microSubjectGroup",
                                              "microRibbons");
-
-    d3.select("#geneDensityBlock")
-        .append(() => heatmapSVG.node());
+    // if two few genes in the selected region, don't draw heatmap
+    if(querGeneNum>100){
+        d3.select("#geneDensityBlock")
+            .append(() => heatmapSVG.node());
+    }
     d3.select("#microSyntenyBlock")
         .append(() => microSVG.node());
     downloadSVG("microSynteny_download", "microSyntenyBlock");
@@ -920,6 +930,7 @@ function generate_microSytenySVG(inputRegionData, inputSubjectBedData,
     const svg = d3.create("svg")
         .attr("viewBox", [0, 0, width, plotHeight]);
     let queryData = inputRegionData.map(d => d.queryGenes).flat();
+    console.log(queryData);
     let pathData = inputRegionData.map(d => d.pathData).flat();
 
     let queryScale = null;
@@ -934,6 +945,7 @@ function generate_microSytenySVG(inputRegionData, inputSubjectBedData,
     // subjectData might contain empty entry (dot in the data)
     //subjectData = subjectData.filter(d => d.id != ".");
     let subjectData = [];
+    console.log(inputSubjectBedData);
     inputSubjectBedData.forEach(d => {
         if(d.start >= subjectRegionStart && d.start <= subjectRegionEnd){
             subjectData.push({
@@ -946,6 +958,7 @@ function generate_microSytenySVG(inputRegionData, inputSubjectBedData,
             });
         }
     });
+    console.log(subjectData);
     let queryY = margin.top + 40 + 10;
     let subjectY = plotHeight - margin.bottom - 50;
     // Add chr label
