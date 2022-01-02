@@ -25,12 +25,12 @@ function plotMacroSynteny(macroSyntenyData){
     var subjectChrInfo = convertShinyData(macroSyntenyData.subjectChrInfo);
     var ribbonData = convertShinyData(macroSyntenyData.ribbon);
 
-    //console.log(queryChrInfo);
-    //console.log(subjectChrInfo);
+    console.log(queryChrInfo);
+    console.log(subjectChrInfo);
     //console.log(ribbonData);
 
     // create svg node
-    const svg = d3.create("svg");
+    //const svg = d3.create("svg");
         //.attr("viewBox", [-width / 2, -height / 2, width, height]);
 
     // Define colors
@@ -39,6 +39,28 @@ function plotMacroSynteny(macroSyntenyData){
 
     if(macroSyntenyData.plotMode === "circular"){
         // cirular plot codes
+        // define plot dimension
+        let width =  800;
+        let height = width; // macroSynteny height
+        let outerRadius = Math.min(width, height) * 0.5 - 60;
+        let innerRadius = outerRadius - 10;
+        let padAngle = 5 / innerRadius;
+
+        // remove old svgs
+        d3.select("#macroSyntenyBlock")
+            .select("svg").remove(); // remove svg first
+        d3.select("#geneDensityBlock")
+            .select("svg").remove(); // remove geneDensity plot
+        d3.select("#microSyntenyBlock")
+            .select("svg").remove(); // remove microSynteny also
+        //d3.select("#macroSyntenyBlock")
+        //    .append(() => svg.node());
+        // create svg
+        const svg = d3.select("#macroSyntenyBlock")
+              .append("svg")
+              .attr("viewBox", [-width / 2, -height / 2, width, height]);
+        // create viewBox of svg
+        //svg.attr("viewBox", [-width / 2, -height / 2, width, height]);
 
         // prepare necessary data
         queryChrInfo = calc_circular_angle(queryChrInfo, Math.PI, 2*Math.PI);
@@ -100,9 +122,6 @@ function plotMacroSynteny(macroSyntenyData){
         var arc = d3.arc()
             .innerRadius(innerRadius)
             .outerRadius(outerRadius);
-
-        // create viewBox of svg
-        svg.attr("viewBox", [-width / 2, -height / 2, width, height]);
 
         const queryGroup = svg.append("g")
               .attr("class", "macroQueryArc")
@@ -299,21 +318,6 @@ function plotMacroSynteny(macroSyntenyData){
                 //Shiny.setInputValue("selectedRegion_subjectEndGene", s_endGene);
             });
 
-    }else if(macroSyntenyData.plotMode === "parallel"){
-        
-    }
-
-    d3.select("#macroSyntenyBlock")
-        .select("svg").remove(); // remove svg first
-    d3.select("#geneDensityBlock")
-        .select("svg").remove(); // remove geneDensity plot
-    d3.select("#microSyntenyBlock")
-        .select("svg").remove(); // remove microSynteny also
-    d3.select("#macroSyntenyBlock")
-        .append(() => svg.node());
-
-    // Add labels, and adjust their position
-    if(macroSyntenyData.plotMode === "circular"){
         const querySyntenyLabel = svg.append("text")
           .attr("class", "querySyntenyLabel")
           .attr("font-size", 18)
@@ -328,19 +332,178 @@ function plotMacroSynteny(macroSyntenyData){
           .attr("font-family", "sans-serif")
           //.attr("font-weight", "bold")
           .text("Subject");
+
         let subjetLabelWidth = svg.select(".subjectSyntenyLabel").node()
             .getComputedTextLength();
 
         subjectSyntenyLabel
             .attr("transform", `translate(${width / 2-subjetLabelWidth}, ${40-height / 2})`);
+
+    }else if(macroSyntenyData.plotMode === "parallel"){
+        // remove old svgs
+        d3.select("#macroSyntenyBlock")
+            .select("svg").remove(); // remove svg first
+        d3.select("#geneDensityBlock")
+            .select("svg").remove(); // remove geneDensity plot
+        d3.select("#microSyntenyBlock")
+            .select("svg").remove(); // remove microSynteny also
+
+        // define macro synteny plot dimension
+        let width =  800;
+        let height = 400; // macroSynteny height
+        let innerPadding = 10;
+        let outterPadding = 20;
+        let chrRectHeight = 15;
+        let chrRectRy = 5;
+        let topPadding = 10;
+        let bottomPadding = 20;
+        let leftPadding = 10;
+        let rightPadding = 10;
+        // create svg viewBox
+        const svg = d3.select("#macroSyntenyBlock")
+              .append("svg")
+              .attr("viewBox", [0, 0, width, height]);
+
+        // calc accumulate chr length
+        queryChrInfo = calc_accumulate_len(queryChrInfo);
+        subjectChrInfo = calc_accumulate_len(subjectChrInfo);
+
+        // plot query chrs
+        const queryGroup = svg.append("g")
+              .attr("class", "queryGroup");
+
+        const subjectGroup = svg.append("g")
+              .attr("class", "subjectGroup");
+
+        const queryScale = d3
+              .scaleLinear()
+              .domain([1, d3.sum(queryChrInfo.map((d) => d.chrLength))])
+              .range([
+                  0 + leftPadding + outterPadding,
+                  width - rightPadding - outterPadding - innerPadding * (queryChrInfo.length - 1)
+              ]);
+        const subjectScale = d3
+              .scaleLinear()
+              .domain([1, d3.sum(subjectChrInfo.map((d) => d.chrLength))])
+              .range([
+                  0 + leftPadding + outterPadding,
+                  width - rightPadding - outterPadding - innerPadding * (subjectChrInfo.length - 1)
+              ]);
+
+        // add main label for query chrs
+        queryGroup.append("text")
+            .text("Query")
+            .attr("id", "queryMainLabel")
+            .attr("x", 0+leftPadding)
+            .attr("y", topPadding + d3.select("#queryMainLabel").node().getBBox().height)
+            .attr("font-weight", "bold")
+            .attr("font-size", "1.2rem")
+            .attr("font-family", "sans-serif");
+
+        // add rect for query chrs
+        queryGroup
+            .selectAll("rect")
+            .data(queryChrInfo)
+            .join("rect")
+            .attr("id", (d) => "queryChr_" + d.idx)
+            .attr("x", (d) => queryScale(d.accumulate_start))
+            .attr("y", topPadding + d3.select("#queryMainLabel").node().getBBox().height + 10)
+            .attr(
+                "width",
+                (d) => queryScale(d.accumulate_end) - queryScale(d.accumulate_start)
+            )
+            .attr("height", chrRectHeight)
+            .attr("stroke", "black")
+            .attr("stroke-width", 2)
+            .attr("opacity", 0.8)
+            .attr("fill", "#69a3b2")
+            .attr("ry", chrRectRy);
+
+        // add query chr labels
+        queryGroup
+            .selectAll("text")
+            .filter(":not(#queryMainLabel)")
+            .data(queryChrInfo)
+            .join("text")
+            .text((d) => d.chr)
+            .attr("x", (d) => d3.mean([queryScale(d.accumulate_end), queryScale(d.accumulate_start)]))
+            .attr("y", d3.select("#queryMainLabel").attr("y"))
+            .attr("font-weight", "bold")
+            .attr("font-size", "1rem")
+            .attr("font-family", "sans-serif");
+
+        // add main label for subject chrs
+        subjectGroup.append("text")
+            .text("Subject")
+            .attr("id", "subjectMainLabel")
+            .attr("x", 0+leftPadding)
+            .attr("y", height - bottomPadding)
+            .attr("font-weight", "bold")
+            .attr("font-size", "1.2rem")
+            .attr("font-family", "sans-serif");
+
+        // plot subject chrs
+        subjectGroup
+            .selectAll("rect")
+            .data(subjectChrInfo)
+            .join("rect")
+            .attr("id", (d) => "subjectChr_" + d.idx)
+            .attr("x", (d) => subjectScale(d.accumulate_start))
+            .attr("y", height - bottomPadding - d3.select("#subjectMainLabel").node().getBBox().height - chrRectHeight - 10)
+            .attr(
+                "width",
+                (d) => subjectScale(d.accumulate_end) - subjectScale(d.accumulate_start)
+            )
+            .attr("height", chrRectHeight)
+            .attr("stroke", "black")
+            .attr("stroke-width", 2)
+            .attr("opacity", 0.8)
+            .attr("fill", "#B27869")
+            .attr("ry", chrRectRy);
+
+        // add subject chr labels
+        subjectGroup
+            .selectAll("text")
+            .filter(":not(#subjectMainLabel)")
+            .data(subjectChrInfo)
+            .join("text")
+            .text((d) => d.chr)
+            .attr("x", (d) => d3.mean([subjectScale(d.accumulate_end), subjectScale(d.accumulate_start)]))
+            .attr("y", d3.select("#subjectMainLabel").attr("y"))
+            .attr("font-weight", "bold")
+            .attr("font-size", "1rem")
+            .attr("font-family", "sans-serif");
+
+        // Add inner padding for query and subject chrs
+        svg.selectAll(".queryGroup, .subjectGroup")
+            .selectAll("rect")
+            //.filter((d) => d.idx >0)
+            .attr("transform", d =>`translate(${innerPadding*d.idx})`);
+        // center chr labels
+        svg.selectAll("text")
+            .filter(":not(#queryMainLabel)")
+            .filter(":not(#subjectMainLabel)")
+            // don't use this in () => {}, not work
+            .attr("transform", function(d, i){
+                return `translate(${innerPadding*d.idx - d3.select(this).node().getComputedTextLength()/2})`;
+            });
     }
+
+    //d3.select("#macroSyntenyBlock")
+    //    .select("svg").remove(); // remove svg first
+    //d3.select("#geneDensityBlock")
+    //    .select("svg").remove(); // remove geneDensity plot
+    //d3.select("#microSyntenyBlock")
+    //    .select("svg").remove(); // remove microSynteny also
+    //d3.select("#macroSyntenyBlock")
+    //    .append(() => svg.node());
 
     // Activate tooltips
     tippy(".macroQueryArc path", {trigger: "mouseenter", followCursor: "initial", delay: [tooltipDelay, null]});
     tippy(".macroSubjectArc path", {trigger: "mouseenter", followCursor: "initial",  delay: [tooltipDelay, null]});
     tippy(".macroRibbons path", {trigger: "mouseenter", followCursor: "initial", allowHTML: true, delay: [tooltipDelay, null]});
     // update svg download link
-    downloadSVG("marcoSynteny_download", "macroSyntenyBlock"); 
+    downloadSVG("marcoSynteny_download", "macroSyntenyBlock");
 }
 
 // use d3.pie() to calculate angles for all the arcs
@@ -354,6 +517,18 @@ function calc_circular_angle(inputChrInfo, startAngle, endAngle){
           .value(d => d.chrLength)
           (inputChrInfo);
     return arcs;
+}
+
+// calculate accumulate length for parallel chr plot
+function calc_accumulate_len(inputChrInfo){
+    var acc_len = 0;
+    inputChrInfo.forEach((e, i) => {
+        e.idx = i;
+        e.accumulate_start = acc_len + 1;
+        e.accumulate_end = e.accumulate_start + e.chrLength - 1;
+        acc_len += e.chrLength;
+    });
+    return inputChrInfo;
 }
 
 // Covert shiny transferred data to desired format
@@ -370,15 +545,6 @@ function convertShinyData(inObj){
     return outArray;
 }
 
-// parallel marco synteny plot
-function plot_parallel_macroSynteny(){
-    let colors = d3.quantize(d3.interpolateRgb.gamma(2.2)("#ca0020", "#0571b0"),
-                             queryBedSummarized.length + subjectBedSummarized.length);
-
-    //create svg
-    const svg = d3.create("svg")
-        .attr("viewBox", [-width / 2, -height / 2, width, height]);
-}
 
 function ribbon(d){
   let pString = ribbonCustom(d, innerRadius - 1, 1 / innerRadius);

@@ -6,6 +6,12 @@ tab1_ui <- tabPanel(
             div(class = "boxLike",
                 style="background-color: #FAF9F6;",
                 h4("Settings"),
+                shinyWidgets::radioGroupButtons(
+                    inputId = "macroPlotMode",
+                    label = "Choose macro synteny plot mode",
+                    choices = c("Circular", "Parallel"),
+                    status = "primary"
+                ),
                 colourInput(
                     inputId = "ribbonColor",
                     label = "Ribbon Color",

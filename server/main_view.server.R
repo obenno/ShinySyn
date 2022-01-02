@@ -212,7 +212,12 @@ observeEvent(input$macroSynteny, {
 
         queryChrInfo <- summarizeChrInfo(synteny$queryBed)
         subjectChrInfo <- summarizeChrInfo(synteny$subjectBed)
-        plotMode <- "circular"
+        ## Define macro plot mode
+        if(input$macroPlotMode == "Circular"){
+            plotMode <- "circular"
+        }else{
+            plotMode <- "parallel"
+        }
         ## Generate macro_synteny_data
         macro_synteny_data <- list(
             "queryChrInfo" = queryChrInfo,
