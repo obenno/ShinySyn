@@ -9,14 +9,15 @@ downloadButton_custom <- function (outputId, label = "Download", class = NULL, s
                    icon, label, ...)
 }
 
-summarizeChrInfo <- function(inputBed){
+summarizeChrInfo <- function(inputBed, chrOrder){
     ## summarize input bed tibble to generate
     ## chr start, end and length
     summarizedBed <- inputBed %>%
         group_by(chr) %>%
         summarise(start = min(start),
                   end = max(end)) %>%
-        mutate(chrLength = end - start + 1)
+        mutate(chrLength = end - start + 1) %>%
+        arrange(match(chr, chrOrder))
     return(summarizedBed)
 }
 

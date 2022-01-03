@@ -196,11 +196,11 @@ observeEvent(input$macroSynteny, {
 
         synteny$queryBed <- queryBed() %>%
             filter(chr %in% input$synteny_query_chr) %>%
-            arrange(chr, start)
+            arrange(factor(chr, levels = input$synteny_query_chr), start)
 
         synteny$subjectBed <- subjectBed() %>%
             filter(chr %in% input$synteny_subject_chr) %>%
-            arrange(chr, start)
+            arrange(factor(chr, levels = input$synteny_subject_chr),start)
 
         anchor_simple <- anchor_simple %>%
             filter(queryChr %in% input$synteny_query_chr & subjectChr %in% input$synteny_subject_chr)
@@ -210,8 +210,8 @@ observeEvent(input$macroSynteny, {
             filter(q_GeneChr %in% input$synteny_query_chr) %>%
             arrange(q_GeneChr, q_GeneStart)
 
-        queryChrInfo <- summarizeChrInfo(synteny$queryBed)
-        subjectChrInfo <- summarizeChrInfo(synteny$subjectBed)
+        queryChrInfo <- summarizeChrInfo(synteny$queryBed, input$synteny_query_chr)
+        subjectChrInfo <- summarizeChrInfo(synteny$subjectBed, input$synteny_subject_chr)
         ## Define macro plot mode
         if(input$macroPlotMode == "Circular"){
             plotMode <- "circular"
