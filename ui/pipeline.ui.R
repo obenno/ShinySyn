@@ -119,7 +119,15 @@ tab3_ui <- tabPanel(
                     )
                     )
             )
-    )),
+        ),
+        fluidRow(
+            column(
+                12,
+                h6("If you use the MCscan pipeline, please also cite its original paper:"),
+                p("Tang, H., Bowers, J. E., Wang, X., Ming, R., Alam, M., & Paterson, A. H. (2008). Synteny and collinearity in plant genomes. Science, 320(5875), 486-488.")
+            )
+        )
+        ),
     value = "pipeline",
     icon = icon("mouse")
 )
