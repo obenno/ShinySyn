@@ -8,7 +8,7 @@ tab1_ui <- tabPanel(
                 h4("Settings"),
                 shinyWidgets::radioGroupButtons(
                     inputId = "macroPlotMode",
-                    label = "Choose macro synteny plot mode",
+                    label = "Choose macro synteny layout",
                     choices = c("Circular", "Parallel"),
                     status = "primary"
                 ),

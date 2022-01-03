@@ -2,9 +2,6 @@
 var width =  800;
 var height = width; // macroSynteny height
 var fontSize = 10;
-var outerRadius = Math.min(width, height) * 0.5 - 60;
-var innerRadius = outerRadius - 10;
-var padAngle = 5 / innerRadius;
 var tooltipDelay = 800; // tooltip delay time in miliseconds
 var formatValue = d3.format(".2~s");
 
@@ -27,7 +24,7 @@ function plotMacroSynteny(macroSyntenyData){
 
     console.log(queryChrInfo);
     console.log(subjectChrInfo);
-    //console.log(ribbonData);
+    console.log(ribbonData);
 
     // create svg node
     //const svg = d3.create("svg");
@@ -313,9 +310,6 @@ function plotMacroSynteny(macroSyntenyData){
                                         "s_endGene": s_endGene
                                     }
                                    );
-                //Shiny.setInputValue("selectedRegion_queryEndGene", q_endGene);
-                //Shiny.setInputValue("selectedRegion_subjectStartGene", s_startGene);
-                //Shiny.setInputValue("selectedRegion_subjectEndGene", s_endGene);
             });
 
         const querySyntenyLabel = svg.append("text")
@@ -364,30 +358,43 @@ function plotMacroSynteny(macroSyntenyData){
               .append("svg")
               .attr("viewBox", [0, 0, width, height]);
 
+        // define innerPadding xscale
+        const innerScale = d3.scaleLinear()
+              .domain([0,1])
+              .range([
+                  0,
+                  width - leftPadding - rightPadding - 2 * outterPadding
+              ]);
         // calc accumulate chr length
-        queryChrInfo = calc_accumulate_len(queryChrInfo);
-        subjectChrInfo = calc_accumulate_len(subjectChrInfo);
+        queryChrInfo = calc_accumulate_len(queryChrInfo, innerScale, innerPadding);
+        subjectChrInfo = calc_accumulate_len(subjectChrInfo, innerScale, innerPadding);
 
         // plot query chrs
         const queryGroup = svg.append("g")
-              .attr("class", "queryGroup");
+              .attr("class", "macroQueryGroup");
 
         const subjectGroup = svg.append("g")
-              .attr("class", "subjectGroup");
+              .attr("class", "macroSubjectGroup");
 
         const queryScale = d3
               .scaleLinear()
-              .domain([1, d3.sum(queryChrInfo.map((d) => d.chrLength))])
+              .domain([
+                  queryChrInfo[0].accumulate_start,
+                  queryChrInfo[queryChrInfo.length - 1].accumulate_end
+              ])
               .range([
                   0 + leftPadding + outterPadding,
-                  width - rightPadding - outterPadding - innerPadding * (queryChrInfo.length - 1)
+                  width - rightPadding - outterPadding
               ]);
         const subjectScale = d3
               .scaleLinear()
-              .domain([1, d3.sum(subjectChrInfo.map((d) => d.chrLength))])
+              .domain([
+                  subjectChrInfo[0].accumulate_start,
+                  subjectChrInfo[subjectChrInfo.length - 1].accumulate_end
+              ])
               .range([
                   0 + leftPadding + outterPadding,
-                  width - rightPadding - outterPadding - innerPadding * (subjectChrInfo.length - 1)
+                  width - rightPadding - outterPadding
               ]);
 
         // add main label for query chrs
@@ -417,7 +424,8 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("stroke-width", 2)
             .attr("opacity", 0.8)
             .attr("fill", "#69a3b2")
-            .attr("ry", chrRectRy);
+            .attr("ry", chrRectRy)
+            .attr("data-tippy-content", (d) => "Query: " + d.chr);
 
         // add query chr labels
         queryGroup
@@ -426,7 +434,7 @@ function plotMacroSynteny(macroSyntenyData){
             .data(queryChrInfo)
             .join("text")
             .text((d) => d.chr)
-            .attr("x", (d) => d3.mean([queryScale(d.accumulate_end), queryScale(d.accumulate_start)]))
+            .attr("x", d => d3.mean([queryScale(d.accumulate_end), queryScale(d.accumulate_start)]))
             .attr("y", d3.select("#queryMainLabel").attr("y"))
             .attr("font-weight", "bold")
             .attr("font-size", "1rem")
@@ -459,7 +467,8 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("stroke-width", 2)
             .attr("opacity", 0.8)
             .attr("fill", "#B27869")
-            .attr("ry", chrRectRy);
+            .attr("ry", chrRectRy)
+            .attr("data-tippy-content", (d) => "Subject: " + d.chr);
 
         // add subject chr labels
         subjectGroup
@@ -474,33 +483,105 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("font-size", "1rem")
             .attr("font-family", "sans-serif");
 
-        // Add inner padding for query and subject chrs
-        svg.selectAll(".queryGroup, .subjectGroup")
-            .selectAll("rect")
-            //.filter((d) => d.idx >0)
-            .attr("transform", d =>`translate(${innerPadding*d.idx})`);
+        // prepare ribbon data
+        ribbonData.forEach((d) => {
+            let queryChr = queryChrInfo.find(e => e.chr === d.queryChr);
+            let subjectChr = subjectChrInfo.find(e => e.chr === d.subjectChr);
+            let queryAccumulateStart = queryChr.accumulate_start + d.queryStart - queryChr.start + 1;
+            let queryAccumulateEnd = queryChr.accumulate_start + d.queryEnd - queryChr.start + 1;
+            let subjectAccumulateStart = subjectChr.accumulate_start + d.subjectStart - subjectChr.start + 1;
+            let subjectAccumulateEnd = subjectChr.accumulate_start + d.subjectEnd - subjectChr.start + 1;
+            if(d.orientation === "+"){
+                d.ribbonPosition = {
+                    source: {
+                        x: queryScale(queryAccumulateStart),
+                        x1: queryScale(queryAccumulateEnd),
+                        y: topPadding + d3.select("#queryMainLabel").node().getBBox().height + 10 + chrRectHeight,
+                        y1: topPadding + d3.select("#queryMainLabel").node().getBBox().height + 10 + chrRectHeight
+                    },
+                    target: {
+                        x: subjectScale(subjectAccumulateStart),
+                        x1: subjectScale(subjectAccumulateEnd),
+                        y: height - bottomPadding - d3.select("#subjectMainLabel").node().getBBox().height - chrRectHeight - 10,
+                        y1: height - bottomPadding - d3.select("#subjectMainLabel").node().getBBox().height - chrRectHeight - 10
+                    }
+                };
+            }else{
+                d.ribbonPosition = {
+                    source: {
+                        x: queryScale(queryAccumulateStart),
+                        x1: queryScale(queryAccumulateEnd),
+                        y: topPadding + d3.select("#queryMainLabel").node().getBBox().height + 10 + chrRectHeight,
+                        y1: topPadding + d3.select("#queryMainLabel").node().getBBox().height + 10 + chrRectHeight
+                    },
+                    target: {
+                        x: subjectScale(subjectAccumulateEnd),
+                        x1: subjectScale(subjectAccumulateStart),
+                        y: height - bottomPadding - d3.select("#subjectMainLabel").node().getBBox().height - chrRectHeight - 10,
+                        y1: height - bottomPadding - d3.select("#subjectMainLabel").node().getBBox().height - chrRectHeight - 10
+                    }
+                };
+            };
+        });
+
+        const ribbonGroup = svg.append("g")
+              .attr("class", "macroRibbons")
+              .selectAll("path")
+              .data(ribbonData)
+              .join("path")
+              .attr("d", d => createLinkPolygonPath(d.ribbonPosition))
+              .attr("fill", "grey")
+              .attr("opacity", 0.6)
+              .attr("data-tippy-content", d => {
+                  return "<b>Query:</b> " + d.q_startGene + " : " + d.q_endGene +
+                      "&#8594" +
+                      "<b>Subject:</b> " + d.s_startGene + " : " + d.s_endGene;
+              })  // Add tippy data attr
+              .on("mouseover", function(){
+                  d3.select(this)
+                      .transition()
+                      .delay(tooltipDelay)
+                      .duration(50)
+                      .style("fill", "red");
+              })
+              .on("mouseout", function(){
+                  d3.select(this)
+                      .transition()
+                      .duration(50)
+                      .style("fill", "grey");
+              })
+              .on("click", function(){
+                  const data = d3.select(this)
+                        .data();
+                  const q_startGene = data[0].q_startGene;
+                  const q_endGene = data[0].q_endGene;
+                  const s_startGene = data[0].s_startGene;
+                  const s_endGene = data[0].s_endGene;
+                  Shiny.setInputValue("selected_macroRegion",
+                                      {
+                                        "q_startGene": q_startGene,
+                                        "q_endGene": q_endGene,
+                                        "s_startGene": s_startGene,
+                                        "s_endGene": s_endGene
+                                      }
+                                     );
+              });
         // center chr labels
         svg.selectAll("text")
             .filter(":not(#queryMainLabel)")
             .filter(":not(#subjectMainLabel)")
-            // don't use this in () => {}, not work
-            .attr("transform", function(d, i){
-                return `translate(${innerPadding*d.idx - d3.select(this).node().getComputedTextLength()/2})`;
+           // don't use this in () => {}, not work
+            .attr("x", function(d, i){
+                return d3.select(this).attr("x") - d3.select(this).node().getComputedTextLength()/2;
             });
     }
 
-    //d3.select("#macroSyntenyBlock")
-    //    .select("svg").remove(); // remove svg first
-    //d3.select("#geneDensityBlock")
-    //    .select("svg").remove(); // remove geneDensity plot
-    //d3.select("#microSyntenyBlock")
-    //    .select("svg").remove(); // remove microSynteny also
-    //d3.select("#macroSyntenyBlock")
-    //    .append(() => svg.node());
 
     // Activate tooltips
     tippy(".macroQueryArc path", {trigger: "mouseenter", followCursor: "initial", delay: [tooltipDelay, null]});
     tippy(".macroSubjectArc path", {trigger: "mouseenter", followCursor: "initial",  delay: [tooltipDelay, null]});
+    tippy(".macroQueryGroup rect", {trigger: "mouseenter", followCursor: "initial",  delay: [tooltipDelay, null]});
+    tippy(".macroSubjectGroup rect", {trigger: "mouseenter", followCursor: "initial",  delay: [tooltipDelay, null]});
     tippy(".macroRibbons path", {trigger: "mouseenter", followCursor: "initial", allowHTML: true, delay: [tooltipDelay, null]});
     // update svg download link
     downloadSVG("marcoSynteny_download", "macroSyntenyBlock");
@@ -520,13 +601,15 @@ function calc_circular_angle(inputChrInfo, startAngle, endAngle){
 }
 
 // calculate accumulate length for parallel chr plot
-function calc_accumulate_len(inputChrInfo){
-    var acc_len = 0;
+function calc_accumulate_len(inputChrInfo, innerPadding_xScale, innerPadding){
+    let acc_len = 0;
+    let total_chr_len = d3.sum(inputChrInfo.map(e => e.chrLength));
+    let ratio = innerPadding_xScale.invert(innerPadding);
     inputChrInfo.forEach((e, i) => {
         e.idx = i;
         e.accumulate_start = acc_len + 1;
         e.accumulate_end = e.accumulate_start + e.chrLength - 1;
-        acc_len += e.chrLength;
+        acc_len = e.accumulate_end + total_chr_len * ratio;
     });
     return inputChrInfo;
 }
@@ -904,7 +987,7 @@ function createPath(svg, pathData, pathClass = "ribbons"){
             ));
     }
   });
-  //console.log(pathInput);
+  console.log(pathInput);
   // draw band path
   const pathGroup = svg.append("g")
   .attr("class", pathClass);
@@ -1178,6 +1261,7 @@ function generate_microSytenySVG(inputRegionData, inputSubjectBedData,
         subjectY,
         subjectRegionStart, subjectRegionEnd,
         subjectGroupClass));
+
     // create path polygon
     svg.append(() => createPath(svg, pathData, ribbonClass));
     // Add axises
