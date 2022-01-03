@@ -407,6 +407,21 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("font-size", "1.2rem")
             .attr("font-family", "sans-serif");
 
+        // add query chr labels
+        queryGroup
+            .selectAll("text")
+            .filter(":not(#queryMainLabel)")
+            .data(queryChrInfo)
+            .join("text")
+            .text((d) => d.chr)
+            .attr("x", d => d3.mean([queryScale(d.accumulate_end), queryScale(d.accumulate_start)]))
+            .attr("y", function(){
+                return Number(d3.select("#queryMainLabel").attr("y")) + Number(5) + Number(d3.select(this).node().getBBox().height);
+            })
+            .attr("font-weight", "bold")
+            .attr("font-size", "1rem")
+            .attr("font-family", "sans-serif");
+
         // add rect for query chrs
         queryGroup
             .selectAll("rect")
@@ -414,7 +429,7 @@ function plotMacroSynteny(macroSyntenyData){
             .join("rect")
             .attr("id", (d) => "queryChr_" + d.idx)
             .attr("x", (d) => queryScale(d.accumulate_start))
-            .attr("y", topPadding + d3.select("#queryMainLabel").node().getBBox().height + 10)
+            .attr("y", topPadding + d3.select("#queryMainLabel").node().getBBox().height + 5 + d3.selectAll(".macroQueryGroup text").filter(":not(#queryMainLabel)").node().getBBox().height + 5)
             .attr(
                 "width",
                 (d) => queryScale(d.accumulate_end) - queryScale(d.accumulate_start)
@@ -427,19 +442,6 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("ry", chrRectRy)
             .attr("data-tippy-content", (d) => "Query: " + d.chr);
 
-        // add query chr labels
-        queryGroup
-            .selectAll("text")
-            .filter(":not(#queryMainLabel)")
-            .data(queryChrInfo)
-            .join("text")
-            .text((d) => d.chr)
-            .attr("x", d => d3.mean([queryScale(d.accumulate_end), queryScale(d.accumulate_start)]))
-            .attr("y", d3.select("#queryMainLabel").attr("y"))
-            .attr("font-weight", "bold")
-            .attr("font-size", "1rem")
-            .attr("font-family", "sans-serif");
-
         // add main label for subject chrs
         subjectGroup.append("text")
             .text("Subject")
@@ -450,6 +452,19 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("font-size", "1.2rem")
             .attr("font-family", "sans-serif");
 
+        // add subject chr labels
+        subjectGroup
+            .selectAll("text")
+            .filter(":not(#subjectMainLabel)")
+            .data(subjectChrInfo)
+            .join("text")
+            .text((d) => d.chr)
+            .attr("x", (d) => d3.mean([subjectScale(d.accumulate_end), subjectScale(d.accumulate_start)]))
+            .attr("y", d3.select("#subjectMainLabel").attr("y") - d3.select("#subjectMainLabel").node().getBBox().height - 5)
+            .attr("font-weight", "bold")
+            .attr("font-size", "1rem")
+            .attr("font-family", "sans-serif");
+
         // plot subject chrs
         subjectGroup
             .selectAll("rect")
@@ -457,7 +472,7 @@ function plotMacroSynteny(macroSyntenyData){
             .join("rect")
             .attr("id", (d) => "subjectChr_" + d.idx)
             .attr("x", (d) => subjectScale(d.accumulate_start))
-            .attr("y", height - bottomPadding - d3.select("#subjectMainLabel").node().getBBox().height - chrRectHeight - 10)
+            .attr("y", height - bottomPadding - d3.select("#subjectMainLabel").node().getBBox().height - 5 - d3.selectAll(".macroSubjectGroup text").filter(":not(#subjectMainLabel)").node().getBBox().height - 5 - chrRectHeight)
             .attr(
                 "width",
                 (d) => subjectScale(d.accumulate_end) - subjectScale(d.accumulate_start)
@@ -470,18 +485,6 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("ry", chrRectRy)
             .attr("data-tippy-content", (d) => "Subject: " + d.chr);
 
-        // add subject chr labels
-        subjectGroup
-            .selectAll("text")
-            .filter(":not(#subjectMainLabel)")
-            .data(subjectChrInfo)
-            .join("text")
-            .text((d) => d.chr)
-            .attr("x", (d) => d3.mean([subjectScale(d.accumulate_end), subjectScale(d.accumulate_start)]))
-            .attr("y", d3.select("#subjectMainLabel").attr("y"))
-            .attr("font-weight", "bold")
-            .attr("font-size", "1rem")
-            .attr("font-family", "sans-serif");
 
         // prepare ribbon data
         ribbonData.forEach((d) => {
@@ -496,14 +499,14 @@ function plotMacroSynteny(macroSyntenyData){
                     source: {
                         x: queryScale(queryAccumulateStart),
                         x1: queryScale(queryAccumulateEnd),
-                        y: topPadding + d3.select("#queryMainLabel").node().getBBox().height + 10 + chrRectHeight,
-                        y1: topPadding + d3.select("#queryMainLabel").node().getBBox().height + 10 + chrRectHeight
+                        y: topPadding + d3.select("#queryMainLabel").node().getBBox().height + 5 + d3.selectAll(".macroQueryGroup text").filter(":not(#queryMainLabel)").node().getBBox().height + 5 + chrRectHeight,
+                        y1: topPadding + d3.select("#queryMainLabel").node().getBBox().height + 5 + d3.selectAll(".macroQueryGroup text").filter(":not(#queryMainLabel)").node().getBBox().height + 5 + chrRectHeight
                     },
                     target: {
                         x: subjectScale(subjectAccumulateStart),
                         x1: subjectScale(subjectAccumulateEnd),
-                        y: height - bottomPadding - d3.select("#subjectMainLabel").node().getBBox().height - chrRectHeight - 10,
-                        y1: height - bottomPadding - d3.select("#subjectMainLabel").node().getBBox().height - chrRectHeight - 10
+                        y: height - bottomPadding - d3.select("#subjectMainLabel").node().getBBox().height - 5 - d3.selectAll(".macroSubjectGroup text").filter(":not(#subjectMainLabel)").node().getBBox().height - 5 - chrRectHeight,
+                        y1: height - bottomPadding - d3.select("#subjectMainLabel").node().getBBox().height - 5 - d3.selectAll(".macroSubjectGroup text").filter(":not(#subjectMainLabel)").node().getBBox().height - 5 - chrRectHeight
                     }
                 };
             }else{
@@ -511,14 +514,14 @@ function plotMacroSynteny(macroSyntenyData){
                     source: {
                         x: queryScale(queryAccumulateStart),
                         x1: queryScale(queryAccumulateEnd),
-                        y: topPadding + d3.select("#queryMainLabel").node().getBBox().height + 10 + chrRectHeight,
-                        y1: topPadding + d3.select("#queryMainLabel").node().getBBox().height + 10 + chrRectHeight
+                        y: topPadding + d3.select("#queryMainLabel").node().getBBox().height + 5 + d3.selectAll(".macroQueryGroup text").filter(":not(#queryMainLabel)").node().getBBox().height + 5 + chrRectHeight,
+                        y1: topPadding + d3.select("#queryMainLabel").node().getBBox().height + 5 + d3.selectAll(".macroQueryGroup text").filter(":not(#queryMainLabel)").node().getBBox().height + 5 + chrRectHeight
                     },
                     target: {
                         x: subjectScale(subjectAccumulateEnd),
                         x1: subjectScale(subjectAccumulateStart),
-                        y: height - bottomPadding - d3.select("#subjectMainLabel").node().getBBox().height - chrRectHeight - 10,
-                        y1: height - bottomPadding - d3.select("#subjectMainLabel").node().getBBox().height - chrRectHeight - 10
+                        y: height - bottomPadding - d3.select("#subjectMainLabel").node().getBBox().height - 5 - d3.selectAll(".macroSubjectGroup text").filter(":not(#subjectMainLabel)").node().getBBox().height - 5 - chrRectHeight,
+                        y1: height - bottomPadding - d3.select("#subjectMainLabel").node().getBBox().height - 5 - d3.selectAll(".macroSubjectGroup text").filter(":not(#subjectMainLabel)").node().getBBox().height - 5 - chrRectHeight
                     }
                 };
             };
