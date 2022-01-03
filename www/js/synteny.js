@@ -60,7 +60,7 @@ function plotMacroSynteny(macroSyntenyData){
         //svg.attr("viewBox", [-width / 2, -height / 2, width, height]);
 
         // prepare necessary data
-        queryChrInfo = calc_circular_angle(queryChrInfo, Math.PI, 2*Math.PI);
+        queryChrInfo = calc_circular_angle(queryChrInfo, Math.PI, 2*Math.PI, padAngle);
         console.log(queryChrInfo);
         // prepare query tick data
         var queryTickStep = d3.tickStep(0, d3.sum(queryChrInfo.map(e => e.value)), 40);
@@ -71,7 +71,7 @@ function plotMacroSynteny(macroSyntenyData){
             });
         });
 
-        subjectChrInfo = calc_circular_angle(subjectChrInfo, 0, Math.PI);
+        subjectChrInfo = calc_circular_angle(subjectChrInfo, 0, Math.PI, padAngle);
         // prepare subject tick data
         var subjectTickStep = d3.tickStep(0, d3.sum(subjectChrInfo.map(e => e.value)), 40);
         subjectChrInfo.forEach((e) => {
@@ -276,7 +276,7 @@ function plotMacroSynteny(macroSyntenyData){
         ribbons.append("path")
             .attr("fill", "grey")
             .attr("opacity", 0.6)
-            .attr("d", d => ribbon(d.ribbonAngle))
+            .attr("d", d => ribbon(d.ribbonAngle, innerRadius))
             .attr("data-tippy-content", d => {
                 return "<b>Query:</b> " + d.q_startGene + " : " + d.q_endGene +
                     "&#8594" +
@@ -588,7 +588,7 @@ function plotMacroSynteny(macroSyntenyData){
 }
 
 // use d3.pie() to calculate angles for all the arcs
-function calc_circular_angle(inputChrInfo, startAngle, endAngle){
+function calc_circular_angle(inputChrInfo, startAngle, endAngle, padAngle){
     const arcs = d3.pie()
           .sort(null)
           .sortValues(null)
@@ -629,7 +629,7 @@ function convertShinyData(inObj){
 }
 
 
-function ribbon(d){
+function ribbon(d, innerRadius){
   let pString = ribbonCustom(d, innerRadius - 1, 1 / innerRadius);
   return pString;
 }
