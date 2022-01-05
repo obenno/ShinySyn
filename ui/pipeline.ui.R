@@ -1,4 +1,4 @@
-tab3_ui <- tabPanel(
+pipeline_ui <- tabPanel(
     "MCScan Pipeline",
     fluidRow(
         column(

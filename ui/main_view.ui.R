@@ -1,11 +1,17 @@
-tab1_ui <- tabPanel(
+mainView_ui <- tabPanel(
     "Main View",
     fluidRow(
         column(
             width = 3,
             div(class = "boxLike",
                 style="background-color: #FAF9F6;",
-                h4("Settings"),
+                h4(icon("cog"), "Settings"),
+                awesomeCheckbox(
+                    inputId = "generateDotPlot",
+                    label = "Generate Dot Plot",
+                    value = TRUE,
+                    status = "primary"
+                ),
                 shinyWidgets::radioGroupButtons(
                     inputId = "macroPlotMode",
                     label = "Choose macro synteny layout",
@@ -25,7 +31,7 @@ tab1_ui <- tabPanel(
                 fluidRow(
                     column(
                         12,
-                        h3("Input")
+                        h3(icon("file-upload"), "Input")
                     )
                 ),
                 fluidRow(
@@ -118,7 +124,7 @@ tab1_ui <- tabPanel(
                 fluidRow(
                     column(
                         12,
-                        h4("Choose Chromosomes:")
+                        h4(icon("dna"), "Choose Chromosomes:")
                     )
                 ),
                 fluidRow(

@@ -227,6 +227,9 @@ observeEvent(input$macroSynteny, {
         )
         session$sendCustomMessage(type = "plotMacroSynteny", macro_synteny_data)
 
+        if(input$generateDotPlot){
+            session$sendCustomMessage(type = "plotDotView", macro_synteny_data)
+        }
         ## hide spinner
         mainView_waiter$hide()
 

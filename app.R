@@ -18,9 +18,9 @@ options(shiny.maxRequestSize=5000*1024^2)
 source(file = "utils.R", local = T, encoding = "UTF-8")
 ## load ui pages
 source(file = "ui/main_view.ui.R", local = T, encoding = "UTF-8")
-source(file = "ui/micro_synteny.ui.R", local = T, encoding = "UTF-8")
+source(file = "ui/dot_view.ui.R", local = T, encoding = "UTF-8")
 source(file = "ui/pipeline.ui.R", local = T, encoding = "UTF-8")
-source(file = "ui/settings.ui.R", local = T, encoding = "UTF-8")
+source(file = "ui/help.ui.R", local = T, encoding = "UTF-8")
 
 ui <- tagList(
     tags$head(
@@ -33,10 +33,10 @@ ui <- tagList(
     navbarPage(
         theme = bs_theme(version = 5,bootswatch = "flatly"),
         title = "ShinySyn",
-        tab1_ui,
-        tab2_ui,
-        tab3_ui,
-        tab4_ui
+        mainView_ui,
+        dotView_ui,
+        pipeline_ui,
+        help_ui
     ),
     tags$script(src="https://unpkg.com/@popperjs/core@2"),
     tags$script(src="https://unpkg.com/tippy.js@6"),

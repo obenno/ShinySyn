@@ -1,5 +1,5 @@
-tab4_ui <- tabPanel(
-    "Settings",
+help_ui <- tabPanel(
+    "Help",
     fluidRow(
         column(
             12,
@@ -7,5 +7,5 @@ tab4_ui <- tabPanel(
                "Settings")
         )
     ),
-    icon = icon("cog")
+    icon = icon("question")
 )
