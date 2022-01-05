@@ -1409,3 +1409,193 @@ Shiny.addCustomMessageHandler("center_microSynteny", function(selectedQueryGene)
     d3.select("#" + "queryGene_" + micro_queryBed.findIndex(element => element.gene === selectedQueryGene))
         .style("fill", "#FF5733");
 });
+
+
+Shiny.addCustomMessageHandler("plotDotView", plotDotView);
+
+function plotDotView(dotViewData){
+
+    var queryChrInfo = convertShinyData(dotViewData.queryChrInfo);
+    var subjectChrInfo = convertShinyData(dotViewData.subjectChrInfo);
+    var anchorSeed = convertShinyData(dotViewData.anchorSeed);
+
+    console.log(queryChrInfo);
+    console.log(subjectChrInfo);
+    console.log(anchorSeed);
+
+    // define macro synteny plot dimension
+    let width =  660;
+    let height = 660; // macroSynteny height
+    let innerPadding = 0;
+    let outterPadding = 20;
+    let topPadding = 10;
+    let bottomPadding = 50;
+    let leftPadding = 50;
+    let rightPadding = 10;
+
+    // define innerPadding xscale
+    const innerScale = d3.scaleLinear()
+          .domain([0,1])
+          .range([
+              0,
+              width - leftPadding - rightPadding - 2 * outterPadding
+          ]);
+    // calc accumulate chr length
+    queryChrInfo = calc_accumulate_len(queryChrInfo, innerScale, innerPadding);
+    subjectChrInfo = calc_accumulate_len(subjectChrInfo, innerScale, innerPadding);
+    anchorSeed.forEach(e => {
+        let queryChr = queryChrInfo.find(d => d.chr === e.chr_query);
+        let subjectChr = subjectChrInfo.find(d => d.chr === e.chr_subject);
+        let queryScale = d3.scaleLinear()
+            .domain([
+                queryChr.start,
+                queryChr.end
+            ])
+            .range([
+                queryChr.accumulate_start,
+                queryChr.accumulate_end
+            ]);
+        let subjectScale = d3.scaleLinear()
+            .domain([
+                subjectChr.start,
+                subjectChr.end
+            ])
+            .range([
+                subjectChr.accumulate_start,
+                subjectChr.accumulate_end
+            ]);
+        e.accumulate_x = queryScale(e.start_query);
+        e.accumulate_y = subjectScale(e.start_subject);
+    });
+
+    console.log(queryChrInfo);
+    console.log(subjectChrInfo);
+    console.log(anchorSeed);
+
+    // remove old svgs
+    d3.select("#dotView")
+        .select("svg").remove(); // remove svg first
+    //d3.select("#geneDensityBlock")
+    //    .select("svg").remove(); // remove geneDensity plot
+    //d3.select("#microSyntenyBlock")
+    //    .select("svg").remove(); // remove microSynteny also
+
+    const xScale = d3.scaleLinear()
+          .domain([
+              queryChrInfo[0].accumulate_start,
+              queryChrInfo[queryChrInfo.length -1].accumulate_end
+          ])
+          .range([leftPadding, width - rightPadding]);
+    // remember to flip the y
+    const yScale = d3.scaleLinear()
+          .domain([
+              subjectChrInfo[0].accumulate_start,
+              subjectChrInfo[subjectChrInfo.length -1].accumulate_end
+          ])
+          .range([height - bottomPadding, topPadding]);
+    const xAxis = d3.axisBottom(xScale)
+          .tickValues(queryChrInfo.map(e => e.accumulate_end).slice(0,-1));
+    const yAxis = d3.axisLeft(yScale)
+          .tickValues(subjectChrInfo.map(e => e.accumulate_end).slice(0,-1));
+    // create svg viewBox
+    const svg = d3.select("#dotView")
+          .append("svg")
+          .attr("viewBox", [0, 0, width, height]);
+    // add x axis
+    svg.append("g")
+        .attr("transform", `translate(0,${height - bottomPadding})`)
+        .call(xAxis)
+        .call(g => g.selectAll(".tick text").remove())
+        .call(g => g.selectAll(".tick line").clone() // add grid line
+              .attr("y2", topPadding + bottomPadding - height)
+              .attr("stroke-dasharray", "4 1")
+              .attr("stroke-opacity", 0.5)
+             );
+
+    // add y axis;
+    svg.append("g")
+        .attr("transform", `translate(${leftPadding}, 0)`)
+        .call(yAxis)
+        .call(g => g.selectAll(".tick text").remove())
+        .call(g => g.selectAll(".tick line").clone() // add grid line
+              .attr("x2", width - leftPadding - rightPadding)
+              .attr("stroke-dasharray", "4 1")
+              .attr("stroke-opacity", 0.5)
+             );
+
+    // add top and right border
+    svg.append("g")
+        .append("line")
+        .attr("transform", `translate(${leftPadding}, ${topPadding})`)
+        .attr("x2", width - leftPadding - rightPadding)
+        .attr("stroke", "currentColor") // currentColor
+        .attr("stroke-opacity", 1);
+    svg.append("g")
+        .append("line")
+        .attr("transform", `translate(${width - rightPadding}, ${topPadding})`)
+        .attr("y2", height - topPadding - bottomPadding)
+        .attr("stroke", "currentColor")
+        .attr("stroke-opacity", 1);
+
+    // add text labels on axises
+    svg.append("g")
+        .attr("class", "xLabel")
+        .selectAll("text")
+        .data(queryChrInfo)
+        .join("text")
+        .attr("x", d => {
+            return xScale(d3.mean([d.accumulate_start, d.accumulate_end]));
+        })
+        .attr("y", height - bottomPadding + 20)
+        .attr("font-size", "0.8rem")
+        .text(d => d.chr)
+        .attr("text-anchor", "middle");
+
+    svg.append("g")
+        .attr("class", "yLabel")
+        .selectAll("text")
+        .data(subjectChrInfo)
+        .join("text")
+        .attr("y", d => {
+            return yScale(d3.mean([d.accumulate_start, d.accumulate_end]));
+        })
+        .attr("x", leftPadding - 15)
+        .attr("font-size", "0.8rem")
+        .text(d => d.chr)
+        .attr("text-anchor", "middle")
+        .attr("transform", function(){
+            return `rotate(-90, ${d3.select(this).attr("x")}, ${d3.select(this).attr("y")})`;
+        });
+
+    // Add title for x and y
+    svg.select(".xLabel")
+        .append("text")
+        .attr("x", d3.mean([leftPadding, width-rightPadding]))
+        .attr("y", height - bottomPadding + 40)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "1rem")
+        .attr("font-weight", "bold")
+        .text("Query");
+
+    svg.select(".yLabel")
+        .append("text")
+        .attr("y", d3.mean([topPadding, height-bottomPadding]))
+        .attr("x", leftPadding - 35)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "1rem")
+        .attr("font-weight", "bold")
+        .attr("transform", function(){
+            return `rotate(-90, ${d3.select(this).attr("x")}, ${d3.select(this).attr("y")})`;
+        })
+        .text("Subject");
+
+    svg.append("g")
+        .selectAll("circle")
+        .data(anchorSeed)
+        .join("circle")
+        .attr("cx", (d) => xScale(d.accumulate_x))
+        .attr("cy", (d) => yScale(d.accumulate_y))
+        .attr("r", 1)
+        .attr("opacity", 0.6);
+
+}

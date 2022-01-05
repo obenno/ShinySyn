@@ -2,7 +2,10 @@ dotView_ui <- tabPanel(
     "Dot View",
     fluidRow(
         column(
-            12,
+            3
+        ),
+        column(
+            9,
             div(id="dotView")
         )
     ),

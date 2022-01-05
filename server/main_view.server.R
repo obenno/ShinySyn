@@ -99,7 +99,9 @@ observeEvent(input$macroSynteny, {
         ## generate anchor simple
         anchorFile_new <- tempfile()
         system(paste0("python -m jcvi.compara.synteny screen ", anchorFile(), " ", anchorFile_new, " --minspan=30 --simple --qbed=", queryBedFile(), " --sbed=", subjectBedFile()))
-        anchorFile_simple <- paste0(tempdir(), "/", basename(anchorFile_new), ".simple")
+        anchorFile_simple <- paste0(tempdir(), "/",
+                                    str_replace(basename(anchorFile_new), regex("\\..*"), ""),
+                                    ".simple")
 
         ## generate i1 file
         i1File <- tempfile()
@@ -227,8 +229,22 @@ observeEvent(input$macroSynteny, {
         )
         session$sendCustomMessage(type = "plotMacroSynteny", macro_synteny_data)
 
+        ## Generate dot_view_data
         if(input$generateDotPlot){
-            session$sendCustomMessage(type = "plotDotView", macro_synteny_data)
+            anchorSeed <- read_tsv(anchorFile(), comment ="#",
+                                    col_names = c("queryGene", "subjectGene", "mcscan_score")) %>%
+                inner_join(synteny$queryBed, by = c("queryGene" = "gene")) %>%
+                inner_join(synteny$subjectBed,
+                           by = c("subjectGene" = "gene"),
+                           suffix = c("_query", "_subject"))
+
+            dot_view_data <- list(
+                "queryChrInfo" = queryChrInfo,
+                "subjectChrInfo" = subjectChrInfo,
+                "anchorSeed" = anchorSeed
+            )
+
+            session$sendCustomMessage(type = "plotDotView", dot_view_data)
         }
         ## hide spinner
         mainView_waiter$hide()
