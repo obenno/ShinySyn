@@ -1471,38 +1471,78 @@ function plotDotView(dotViewData){
     console.log(queryChrInfo);
     console.log(subjectChrInfo);
     console.log(anchorSeed);
-
+    
     // remove old svgs
     d3.select("#dotView")
         .select("svg").remove(); // remove svg first
-    //d3.select("#geneDensityBlock")
-    //    .select("svg").remove(); // remove geneDensity plot
-    //d3.select("#microSyntenyBlock")
-    //    .select("svg").remove(); // remove microSynteny also
+    // setup origin domain of x, y scale
+    let xDomain = [
+        queryChrInfo[0].accumulate_start,
+        queryChrInfo[queryChrInfo.length -1].accumulate_end
+    ];
+
+    let yDomain = [
+        subjectChrInfo[0].accumulate_start,
+        subjectChrInfo[subjectChrInfo.length -1].accumulate_end
+    ];
 
     const xScale = d3.scaleLinear()
-          .domain([
-              queryChrInfo[0].accumulate_start,
-              queryChrInfo[queryChrInfo.length -1].accumulate_end
-          ])
+          .domain(xDomain)
           .range([leftPadding, width - rightPadding]);
     // remember to flip the y
     const yScale = d3.scaleLinear()
-          .domain([
-              subjectChrInfo[0].accumulate_start,
-              subjectChrInfo[subjectChrInfo.length -1].accumulate_end
-          ])
+          .domain(yDomain)
           .range([height - bottomPadding, topPadding]);
+
     const xAxis = d3.axisBottom(xScale)
           .tickValues(queryChrInfo.map(e => e.accumulate_end).slice(0,-1));
     const yAxis = d3.axisLeft(yScale)
           .tickValues(subjectChrInfo.map(e => e.accumulate_end).slice(0,-1));
+
+    // init canvas
+    const canvas = d3
+          .create("canvas")
+          .attr("width", width)
+          .attr("height", height); // same size as svg, so the scales could be shared
+
+
+    const context = canvas.node().getContext('2d');
+
+    function drawPoint(point_x, point_y, pointColor) {
+        context.beginPath();
+        context.fillStyle = pointColor;
+        const px = point_x;
+        const py = point_y;
+
+        context.arc(px, py, 1.2, 0, 2 * Math.PI,true);
+        context.fill();
+    }
+    // loop dataset to add points
+    anchorSeed.forEach(e => {
+        drawPoint(xScale(e.accumulate_x),
+                  yScale(e.accumulate_y),
+                  "black");
+    });
+
+    //console.log(dataURL);
+
     // create svg viewBox
     const svg = d3.select("#dotView")
           .append("svg")
           .attr("viewBox", [0, 0, width, height]);
+
+    // canvas was embeded as foreignObject in svg
+    // https://observablehq.com/@mootari/embed-canvas-into-svg
+    svg.append("foreignObject")
+        .attr("x", "0")
+        .attr("y", "0")
+        .attr("width", "100%")
+        .attr("height", "100%")
+        .append(() => canvas.node());
+
     // add x axis
     svg.append("g")
+        .attr("class", "axis axis--x")
         .attr("transform", `translate(0,${height - bottomPadding})`)
         .call(xAxis)
         .call(g => g.selectAll(".tick text").remove())
@@ -1514,6 +1554,7 @@ function plotDotView(dotViewData){
 
     // add y axis;
     svg.append("g")
+        .attr("class", "axis axis--y")
         .attr("transform", `translate(${leftPadding}, 0)`)
         .call(yAxis)
         .call(g => g.selectAll(".tick text").remove())
@@ -1553,22 +1594,31 @@ function plotDotView(dotViewData){
 
     svg.append("g")
         .attr("class", "yLabel")
-        .selectAll("text")
+        .attr("transform", `translate(${leftPadding}, ${topPadding})`)
+        .selectAll("g")
+        //.selectAll("text")
         .data(subjectChrInfo)
-        .join("text")
-        .attr("y", d => {
-            return yScale(d3.mean([d.accumulate_start, d.accumulate_end]));
-        })
-        .attr("x", leftPadding - 15)
+        //.join("text")
+        .join("g")
+        .attr("transform", d => `translate(-15 ${yScale(d3.mean([d.accumulate_start, d.accumulate_end]))})`)
+        //.attr("x", leftPadding - 15)
+        //.attr("y", topPadding)
+        //.attr("dy", d => {
+        //    return yScale(d3.mean([d.accumulate_start, d.accumulate_end]));
+        //})
+    //.attr("x", leftPadding - 15)
+        .append("text")
         .attr("font-size", "0.8rem")
         .text(d => d.chr)
         .attr("text-anchor", "middle")
         .attr("transform", function(){
-            return `rotate(-90, ${d3.select(this).attr("x")}, ${d3.select(this).attr("y")})`;
+            //return `rotate(-90, ${d3.select(this).attr("x")}, ${d3.select(this).attr("y")})`;
+            return `rotate(-90)`;
         });
 
     // Add title for x and y
-    svg.select(".xLabel")
+    svg.append("g")
+        .attr("class", "xTitle")
         .append("text")
         .attr("x", d3.mean([leftPadding, width-rightPadding]))
         .attr("y", height - bottomPadding + 40)
@@ -1577,7 +1627,8 @@ function plotDotView(dotViewData){
         .attr("font-weight", "bold")
         .text("Query");
 
-    svg.select(".yLabel")
+    svg.append("g")
+        .attr("class","yTitle")
         .append("text")
         .attr("y", d3.mean([topPadding, height-bottomPadding]))
         .attr("x", leftPadding - 35)
@@ -1589,13 +1640,116 @@ function plotDotView(dotViewData){
         })
         .text("Subject");
 
-    svg.append("g")
-        .selectAll("circle")
-        .data(anchorSeed)
-        .join("circle")
-        .attr("cx", (d) => xScale(d.accumulate_x))
-        .attr("cy", (d) => yScale(d.accumulate_y))
-        .attr("r", 1)
-        .attr("opacity", 0.6);
+    // The browser couldn't afford so many svg dots
+    // switch to canvas for scatter plot
+    // The implementation of canvas could be referred to
+    // https://github.com/xoor-io/d3-canvas-example
+    // https://stackoverflow.com/questions/4643309/creating-a-canvas-on-top-of-an-svg-or-other-image?rq=1
 
+    // reuse the brush code for canvas
+    // brush and zoom function
+    // code modified from Mike Bostock's example
+    // https://bl.ocks.org/mbostock/f48fcdb929a620ed97877e4678ab15e6
+    let brush = d3.brush()
+        .extent([
+            [leftPadding, topPadding],
+            [width - rightPadding, height - bottomPadding]
+        ])
+        .on("end", brushended),
+        idleTimeout,
+        idleDelay = 350;
+
+    // brushended function
+    function brushended({selection}) {
+        let s = selection;
+        //console.log(s[0][0]);
+        if (!s) {
+            if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
+            xScale.domain(xDomain);
+            yScale.domain(yDomain);
+        } else {
+            // renew scales
+            xScale.domain([s[0][0], s[1][0]].map(xScale.invert, xScale));
+            yScale.domain([s[1][1], s[0][1]].map(yScale.invert, yScale));
+            svg.select(".brush").call(brush.move, null);
+        }
+        zoom();
+    }
+
+    function idled() {
+        idleTimeout = null;
+    }
+
+    function zoom() {
+        var t = svg.transition().duration(750);
+        // update axises
+        svg.select(".axis--x").transition(t).call(xAxis);
+        svg.select(".axis--y").transition(t).call(yAxis);
+        // update axises labels
+        svg.select(".xLabel")
+            .selectAll("text")
+            .transition(t)
+            .attr("x", d => {
+                if(d.accumulate_start < xScale.domain()[0] &&
+                   d.accumulate_end > xScale.domain()[0] &&
+                   d.accumulate_end < xScale.domain()[1]){
+                    // shift right
+                    return xScale(d3.mean([xScale.domain()[0], d.accumulate_end]));
+                }else if(d.accumulate_start < xScale.domain()[1] &&
+                         d.accumulate_start > xScale.domain()[0] &&
+                         d.accumulate_end > xScale.domain()[1]){
+                    // shift left
+                    return xScale(d3.mean([d.accumulate_start, xScale.domain()[1]]));
+                }else if(d.accumulate_start < xScale.domain()[0] &&
+                         d.accumulate_end > xScale.domain()[1]){
+                    return d3.mean([xScale.range()[0], xScale.range()[1]]);
+                }else{
+                    return xScale(d3.mean([d.accumulate_start, d.accumulate_end]));
+                };
+            });
+        svg.select(".yLabel")
+            .selectAll("g")
+            .transition(t)
+            .attr("transform", d => {
+                let k;
+                if(d.accumulate_start < yScale.domain()[0] &&
+                   d.accumulate_end > yScale.domain()[0] &&
+                   d.accumulate_end < yScale.domain()[1]){
+                    // shift down
+                    k = yScale(d3.mean([yScale.domain()[0], d.accumulate_end]));
+                }else if(d.accumulate_start < yScale.domain()[1] &&
+                         d.accumulate_start > yScale.domain()[0] &&
+                         d.accumulate_end > yScale.domain()[1]){
+                    // shift up
+                    k = yScale(d3.mean([d.accumulate_start, yScale.domain()[1]]));
+                }else if(d.accumulate_start < yScale.domain()[0] &&
+                         d.accumulate_end > yScale.domain()[1]){
+                    k = d3.mean([yScale.range()[0], yScale.range()[1]]);
+                }else{
+                    k = yScale(d3.mean([d.accumulate_start, d.accumulate_end]));
+                };
+                return `translate(-15 ${k})`;
+            });
+
+        // update canvas
+        context.save();
+        context.clearRect(0, 0, width, height);
+        anchorSeed.forEach(e => {
+            if(e.accumulate_x >= xScale.domain()[0] &&
+               e.accumulate_x <= xScale.domain()[1] &&
+               e.accumulate_y >= yScale.domain()[0] &&
+               e.accumulate_y <= yScale.domain()[1]){
+               drawPoint(xScale(e.accumulate_x),
+                         yScale(e.accumulate_y),
+                         "black");
+            }
+        });
+        context.restore();
+
+    }
+
+    // added brush elements
+    svg.append("g")
+    .attr("class", "brush")
+    .call(brush);
 }
