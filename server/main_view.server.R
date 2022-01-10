@@ -281,7 +281,7 @@ observeEvent(input$selected_macroRegion, {
     ## including genes without subject hits
     output$microAnchor_out <- DT::renderDataTable({
         synteny$selectedAnchors
-    }, selection="single", rownames = FALSE, server = FALSE)
+    }, selection="single", rownames = FALSE, server = TRUE)
     ## Filter anchor infor to discard records with
     ## subject genes not in the selected subject macro-synteny region
     ##synteny$selectedAnchors_filtered <- synteny$selectedAnchors %>%
@@ -303,4 +303,24 @@ observeEvent(input$microAnchor_out_rows_selected, {
     selectedQueryGene <- synteny$selectedAnchors[input$microAnchor_out_rows_selected,] %>%
         pull(q_Gene)
     session$sendCustomMessage(type = "center_microSynteny", selectedQueryGene)
+})
+
+observeEvent(input$selected_anchors, {
+
+    ## shiny transferred data are nested lists
+    ## not friendly
+    output$selected_anchors  <- renderDT({
+        input$selected_anchors %>%
+        as_tibble() %>%
+        unnest(cols = colnames(.data))
+    }, selection="single", rownames = FALSE, server = TRUE)
+
+    output$dotviewTable <- renderUI({
+        tagList(
+            h4("Anchor Genes:"),
+            p(style="color: gray;",
+              "Please selected your region of interest from the dot plot on the left panel, the table below will be updated automatically."),
+            DTOutput("selected_anchors")
+        )
+    })
 })

@@ -1423,6 +1423,10 @@ function plotDotView(dotViewData){
     console.log(subjectChrInfo);
     console.log(anchorSeed);
 
+    // Init anchors table
+    let selectedAnchors_formatted = formatAnchorData(anchorSeed);
+    Shiny.setInputValue("selected_anchors", selectedAnchors_formatted);
+    
     // define macro synteny plot dimension
     let width =  660;
     let height = 660; // macroSynteny height
@@ -1471,7 +1475,7 @@ function plotDotView(dotViewData){
     console.log(queryChrInfo);
     console.log(subjectChrInfo);
     console.log(anchorSeed);
-    
+
     // remove old svgs
     d3.select("#dotView")
         .select("svg").remove(); // remove svg first
@@ -1680,6 +1684,36 @@ function plotDotView(dotViewData){
         idleTimeout = null;
     }
 
+    function formatAnchorData(selectedAnchors){
+        let selectedAnchors_formatted = {
+            queryGene: [],
+            chr_query: [],
+            start_query: [],
+            end_query: [],
+            strand_query: [],
+            subjectGene: [],
+            chr_subject: [],
+            start_subject: [],
+            end_subject: [],
+            strand_subject: [],
+            mcscan_score: []
+        };
+        selectedAnchors.forEach( e => {
+            selectedAnchors_formatted.queryGene.push(e.queryGene);
+            selectedAnchors_formatted.chr_query.push(e.chr_query);
+            selectedAnchors_formatted.start_query.push(e.start_query);
+            selectedAnchors_formatted.end_query.push(e.end_query);
+            selectedAnchors_formatted.strand_query.push(e.strand_query);
+            selectedAnchors_formatted.subjectGene.push(e.subjectGene);
+            selectedAnchors_formatted.chr_subject.push(e.chr_subject);
+            selectedAnchors_formatted.start_subject.push(e.start_subject);
+            selectedAnchors_formatted.end_subject.push(e.end_subject);
+            selectedAnchors_formatted.strand_subject.push(e.strand_subject);
+            selectedAnchors_formatted.mcscan_score.push(e.mcscan_score);
+        });
+        return selectedAnchors_formatted;
+    }
+
     function zoom() {
         var t = svg.transition().duration(750);
         // update axises
@@ -1732,6 +1766,7 @@ function plotDotView(dotViewData){
             });
 
         // update canvas
+        let selectedAnchors = [];
         context.save();
         context.clearRect(0, 0, width, height);
         anchorSeed.forEach(e => {
@@ -1742,9 +1777,15 @@ function plotDotView(dotViewData){
                drawPoint(xScale(e.accumulate_x),
                          yScale(e.accumulate_y),
                          "black");
+               selectedAnchors.push(e);
             }
         });
         context.restore();
+        // send selected anchors to shiny
+        console.log(selectedAnchors);
+        // data needs to be reformatted before transfer
+        let selectedAnchors_formatted = formatAnchorData(selectedAnchors);
+        Shiny.setInputValue("selected_anchors", selectedAnchors_formatted);
 
     }
 
