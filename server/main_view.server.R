@@ -103,10 +103,6 @@ observeEvent(input$macroSynteny, {
                                     str_replace(basename(anchorFile_new), regex("\\..*"), ""),
                                     ".simple")
 
-        ## generate i1 file
-        i1File <- tempfile()
-        system(paste0("python -m jcvi.compara.synteny mcscan ", queryBedFile(), " ", anchorLiftedFile(), " --iter=1 -o ", i1File))
-
         ## Read data
         anchor_simple <- vroom(
             anchorFile_simple,
@@ -165,36 +161,12 @@ observeEvent(input$macroSynteny, {
             dplyr::rename(score = score.anchor,
                    subjectEnd = end)
 
-        ## Process anchor_full (i1block file)
+        ## Process anchor_full
         anchor_full <- vroom(
-            i1File,
-            col_names = c("q_Gene","s_Gene")
+            anchorLiftedFile(),
+            col_names = c("q_Gene","s_Gene", "score"),
+            comment = "#"
         )
-
-        anchor_full <- anchor_full %>%
-            inner_join(queryBed(),
-                       by = c("q_Gene" = "gene"),
-                       suffix = c(".anchor", ".bed")) %>%
-            select(q_Gene,
-                   chr, start, end, strand,
-                   s_Gene) %>%
-            dplyr::rename(q_GeneChr = chr,
-                   q_GeneStart = start,
-                   q_GeneEnd = end,
-                   q_GeneStrand = strand)
-
-        anchor_full <- anchor_full %>%
-            left_join(subjectBed(),
-                      by = c("s_Gene" = "gene"),
-                      suffix = c(".anchor", ".bed")) %>%
-            select(q_Gene,
-                   q_GeneChr, q_GeneStart, q_GeneEnd, q_GeneStrand,
-                   s_Gene,
-                   chr, start, end, strand) %>%
-            dplyr::rename(s_GeneChr = chr,
-                   s_GeneStart = start,
-                   s_GeneEnd = end,
-                   s_GeneStrand = strand)
 
         synteny$queryBed <- queryBed() %>%
             filter(chr %in% input$synteny_query_chr) %>%
@@ -208,9 +180,9 @@ observeEvent(input$macroSynteny, {
             filter(queryChr %in% input$synteny_query_chr & subjectChr %in% input$synteny_subject_chr)
 
         ## Filter and order anchor_full
-        synteny$anchor_full <- anchor_full %>%
-            filter(q_GeneChr %in% input$synteny_query_chr) %>%
-            arrange(q_GeneChr, q_GeneStart)
+        synteny$anchor_full <- anchor_full ##%>%
+             ##filter(q_GeneChr %in% input$synteny_query_chr) %>%
+             ##arrange(q_GeneChr, q_GeneStart)
 
         queryChrInfo <- summarizeChrInfo(synteny$queryBed, input$synteny_query_chr)
         subjectChrInfo <- summarizeChrInfo(synteny$subjectBed, input$synteny_subject_chr)
@@ -253,39 +225,79 @@ observeEvent(input$macroSynteny, {
 })
 
 observeEvent(input$selected_macroRegion, {
-
+    ## The start and end gene were from 5' to 3' order on the genome
+    ## no matter the orientation relationship between query and subject region
     selectedRegion_queryStartGene <- input$selected_macroRegion[["q_startGene"]]
     selectedRegion_queryEndGene <- input$selected_macroRegion[["q_endGene"]]
     selectedRegion_subjectStartGene <- input$selected_macroRegion[["s_startGene"]]
     selectedRegion_subjectEndGene <- input$selected_macroRegion[["s_endGene"]]
 
-    idx1 <- rownames(synteny$queryBed)[ synteny$queryBed$gene == selectedRegion_queryStartGene] %>%
-        as.numeric()
-    idx2 <- rownames(synteny$queryBed)[ synteny$queryBed$gene == selectedRegion_queryEndGene] %>%
-        as.numeric()
-    synteny$selectedQueryRegion <- synteny$queryBed %>% slice(idx1: idx2)
+    microQueryChr <- synteny$queryBed %>%
+        filter(gene == selectedRegion_queryStartGene) %>%
+        pull(chr)
+    microQueryStart <- synteny$queryBed %>%
+        filter(gene == selectedRegion_queryStartGene) %>%
+        pull(start)
+    microQueryEnd <- synteny$queryBed %>%
+        filter(gene == selectedRegion_queryEndGene) %>%
+        pull(end)
 
-    idx1 <- rownames(synteny$anchor_full)[ synteny$anchor_full$q_Gene == selectedRegion_queryStartGene] %>%
-        as.numeric()
-    idx2 <- rownames(synteny$anchor_full)[ synteny$anchor_full$q_Gene == selectedRegion_queryEndGene] %>%
-        as.numeric()
-    synteny$selectedAnchors <- synteny$anchor_full %>% slice(idx1: idx2)
+    synteny$selectedQueryRegion <- synteny$queryBed %>%
+        filter(chr == microQueryChr,
+               start >= microQueryStart,
+               end <= microQueryEnd)
 
-    idx1 <- rownames(synteny$subjectBed)[ synteny$subjectBed$gene == selectedRegion_subjectStartGene] %>%
-        as.numeric()
-    idx2 <- rownames(synteny$subjectBed)[ synteny$subjectBed$gene == selectedRegion_subjectEndGene] %>%
-        as.numeric()
-    synteny$selectedSubjectRegion <- synteny$subjectBed %>% slice(idx1: idx2) %>%
-        arrange(chr, start)
+    microSubjectChr <- synteny$subjectBed %>%
+        filter(gene == selectedRegion_subjectStartGene) %>%
+        pull(chr)
+    microSubjectStart <- synteny$subjectBed %>%
+        filter(gene == selectedRegion_subjectStartGene) %>%
+        pull(start)
+    microSubjectEnd <- synteny$subjectBed %>%
+        filter(gene == selectedRegion_subjectEndGene) %>%
+        pull(end)
+
+    synteny$selectedSubjectRegion <- synteny$subjectBed %>%
+        filter(chr == microSubjectChr,
+               start >= microSubjectStart,
+               end <= microSubjectEnd)
+
+    ## firstly filter anchors, retain the one with highest score value
+    ## this behaviour should be the same as generating i1 blocks in mcscan doc
+    synteny$selectedAnchors <- synteny$anchor_full %>%
+        filter(q_Gene %in% synteny$selectedQueryRegion$gene,
+               s_Gene %in% synteny$selectedSubjectRegion$gene) %>%
+        group_by(q_Gene) %>%
+        summarise(s_Gene  = first(s_Gene, order_by = desc(score)))
+
+    ## Added genomics coordinates to anchors
+    synteny$selectedAnchors <- synteny$selectedAnchors %>%
+        inner_join(synteny$selectedQueryRegion,
+                   by = c("q_Gene" = "gene"),
+                   suffix = c(".anchor", ".bed")) %>%
+        select(q_Gene,
+               chr, start, end, strand,
+               s_Gene) %>%
+        dplyr::rename(q_GeneChr = chr,
+                      q_GeneStart = start,
+                      q_GeneEnd = end,
+                      q_GeneStrand = strand) %>%
+        left_join(synteny$selectedSubjectRegion,
+                  by = c("s_Gene" = "gene"),
+                  suffix = c(".anchor", ".bed")) %>%
+        select(q_Gene,
+               q_GeneChr, q_GeneStart, q_GeneEnd, q_GeneStrand,
+               s_Gene,
+               chr, start, end, strand) %>%
+        dplyr::rename(s_GeneChr = chr,
+                      s_GeneStart = start,
+                      s_GeneEnd = end,
+                      s_GeneStrand = strand)
+
     ## Put all anchor infor into result table
-    ## including genes without subject hits
     output$microAnchor_out <- DT::renderDataTable({
         synteny$selectedAnchors
     }, selection="single", rownames = FALSE, server = TRUE)
-    ## Filter anchor infor to discard records with
-    ## subject genes not in the selected subject macro-synteny region
-    ##synteny$selectedAnchors_filtered <- synteny$selectedAnchors %>%
-    ##    filter(s_Gene %in% synteny$selectedSubjectRegion$gene)
 
     micro_synteny_data <- list(
         microQueryRegion = synteny$selectedQueryRegion,
