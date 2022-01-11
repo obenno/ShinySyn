@@ -17,6 +17,7 @@ mainView_ui <- tabPanel(
                     inputId = "macroPlotMode",
                     label = "Choose macro synteny layout",
                     choices = c("Circular", "Parallel"),
+                    width = "100%",
                     status = "primary"
                 ),
                 colourInput(
