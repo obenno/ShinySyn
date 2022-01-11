@@ -16,16 +16,22 @@ var heatmapHeight = 30; // heatmap rectangle height
 
 Shiny.addCustomMessageHandler("plotMacroSynteny", plotMacroSynteny);
 
+var querySpecies = null;
+var subjectSpecies = null;
+
 function plotMacroSynteny(macroSyntenyData){
 
     var queryChrInfo = convertShinyData(macroSyntenyData.queryChrInfo);
     var subjectChrInfo = convertShinyData(macroSyntenyData.subjectChrInfo);
     var ribbonData = convertShinyData(macroSyntenyData.ribbon);
+    querySpecies = macroSyntenyData.querySpecies;
+    subjectSpecies = macroSyntenyData.subjectSpecies;
 
     // sort ribbonData according to ribbon width (descending)
     ribbonData.sort(function(a, b){
         return (b.queryEnd - b.queryStart) - (a.queryEnd - a.queryStart);
     });
+    console.log(querySpecies);
     console.log(queryChrInfo);
     console.log(subjectChrInfo);
     console.log(ribbonData);
@@ -320,16 +326,16 @@ function plotMacroSynteny(macroSyntenyData){
           .attr("class", "querySyntenyLabel")
           .attr("font-size", 18)
           .attr("font-family", "sans-serif")
-          //.attr("font-weight", "bold")
-          .text("Query")
+          .attr("font-weight", "bold")
+          .text(querySpecies)
           .attr("transform", `translate(${-width / 2}, ${40-height / 2})`);
 
         const subjectSyntenyLabel = svg.append("text")
           .attr("class", "subjectSyntenyLabel")
           .attr("font-size", 18)
           .attr("font-family", "sans-serif")
-          //.attr("font-weight", "bold")
-          .text("Subject");
+          .attr("font-weight", "bold")
+          .text(subjectSpecies);
 
         let subjetLabelWidth = svg.select(".subjectSyntenyLabel").node()
             .getComputedTextLength();
@@ -403,7 +409,7 @@ function plotMacroSynteny(macroSyntenyData){
 
         // add main label for query chrs
         queryGroup.append("text")
-            .text("Query")
+            .text(querySpecies)
             .attr("id", "queryMainLabel")
             .attr("x", 0+leftPadding)
             .attr("y", topPadding + d3.select("#queryMainLabel").node().getBBox().height)
@@ -448,7 +454,7 @@ function plotMacroSynteny(macroSyntenyData){
 
         // add main label for subject chrs
         subjectGroup.append("text")
-            .text("Subject")
+            .text(subjectSpecies)
             .attr("id", "subjectMainLabel")
             .attr("x", 0+leftPadding)
             .attr("y", height - bottomPadding)
@@ -870,6 +876,7 @@ function plotSelectedMicroSynteny(microSyntenyData){
         selectedRegionData = selectedDataIdx.map(d => regionData[d]);
 
         const microSVG = generate_microSytenySVG(selectedRegionData, micro_subjectBed,
+                                                 querySpecies, subjectSpecies,
                                                  microSyntenyHeight, microSyntenyMargin,
                                                  "microQueryGroup",
                                                  "microSubjectGroup",
@@ -895,6 +902,7 @@ function plotSelectedMicroSynteny(microSyntenyData){
     console.log(selectedRegionData);
     console.log(micro_subjectBed);
     const microSVG = generate_microSytenySVG(selectedRegionData, micro_subjectBed,
+                                             querySpecies, subjectSpecies,
                                              microSyntenyHeight, microSyntenyMargin,
                                              "microQueryGroup",
                                              "microSubjectGroup",
@@ -1166,6 +1174,7 @@ function subjectAxis(g, xScale){
 }
 
 function generate_microSytenySVG(inputRegionData, inputSubjectBedData,
+                                 querySpecies, subjectSpecies,
                                  plotHeight, margin,
                                  queryGroupClass = "queryGroup",
                                  subjectGroupClass = "subjectGroup",
@@ -1241,7 +1250,7 @@ function generate_microSytenySVG(inputRegionData, inputSubjectBedData,
           .attr("class", "subjectAxis")
           .attr("transform", `translate(0, ${subjectY+20})`);
 
-    queryChrLabel.text("Query: " + queryData[0].chr);
+    queryChrLabel.text(querySpecies + ": " + queryData[0].chr);
 
     [queryRegionStart, queryRegionEnd] = getRegionBoundary(queryData);
     queryRegionLength = queryRegionEnd - queryRegionStart + 1;
@@ -1255,7 +1264,7 @@ function generate_microSytenySVG(inputRegionData, inputSubjectBedData,
         queryGroupClass));
 
     // subjectData might contain empty entry (dot in the data)
-    subjectChrLabel.text("Subject: " + subjectData[0].chr);
+    subjectChrLabel.text(subjectSpecies + ": " + subjectData[0].chr);
 
     [subjectRegionStart, subjectRegionEnd] = getRegionBoundary(subjectData);
     subjectRegionLength = subjectRegionEnd - subjectRegionStart + 1;
@@ -1387,6 +1396,7 @@ Shiny.addCustomMessageHandler("center_microSynteny", function(selectedQueryGene)
     //declare to be used in this function
     let selectedRegionData = selectedIdxAll.map(d => regionData[d]);
     const microSVG = generate_microSytenySVG(selectedRegionData, micro_subjectBed,
+                                             querySpecies, subjectSpecies,
                                              microSyntenyHeight, microSyntenyMargin,
                                              "microQueryGroup",
                                              "microSubjectGroup",
@@ -1422,6 +1432,8 @@ function plotDotView(dotViewData){
     var queryChrInfo = convertShinyData(dotViewData.queryChrInfo);
     var subjectChrInfo = convertShinyData(dotViewData.subjectChrInfo);
     var anchorSeed = convertShinyData(dotViewData.anchorSeed);
+    var querySpecies = dotViewData.querySpecies;
+    var subjectSpecies = dotViewData.subjectSpecies;
 
     console.log(queryChrInfo);
     console.log(subjectChrInfo);
@@ -1430,7 +1442,7 @@ function plotDotView(dotViewData){
     // Init anchors table
     let selectedAnchors_formatted = formatAnchorData(anchorSeed);
     Shiny.setInputValue("selected_anchors", selectedAnchors_formatted);
-    
+
     // define macro synteny plot dimension
     let width =  660;
     let height = 660; // macroSynteny height
@@ -1633,7 +1645,7 @@ function plotDotView(dotViewData){
         .attr("text-anchor", "middle")
         .attr("font-size", "1rem")
         .attr("font-weight", "bold")
-        .text("Query");
+        .text(querySpecies);
 
     svg.append("g")
         .attr("class","yTitle")
@@ -1646,7 +1658,7 @@ function plotDotView(dotViewData){
         .attr("transform", function(){
             return `rotate(-90, ${d3.select(this).attr("x")}, ${d3.select(this).attr("y")})`;
         })
-        .text("Subject");
+        .text(subjectSpecies);
 
     // The browser couldn't afford so many svg dots
     // switch to canvas for scatter plot

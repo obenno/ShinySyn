@@ -61,6 +61,22 @@ subjectBed <- reactive({
     }
 })
 
+querySpecies <- reactive({
+    if(input$use_mcscan){
+        input$query_species
+    }else{
+        input$query_species_main
+    }
+})
+
+subjectSpecies <- reactive({
+    if(input$use_mcscan){
+        input$subject_species
+    }else{
+        input$subject_species_main
+    }
+})
+
 observe({
     if(is.null(queryBed())){
         x <- NULL
@@ -194,7 +210,9 @@ observeEvent(input$macroSynteny, {
         }
         ## Generate macro_synteny_data
         macro_synteny_data <- list(
+            "querySpecies" = querySpecies(),
             "queryChrInfo" = queryChrInfo,
+            "subjectSpecies" = subjectSpecies(),
             "subjectChrInfo" = subjectChrInfo,
             "ribbon" = anchor_simple,
             "plotMode" = plotMode
@@ -211,7 +229,9 @@ observeEvent(input$macroSynteny, {
                            suffix = c("_query", "_subject"))
 
             dot_view_data <- list(
+                "querySpecies" = querySpecies(),
                 "queryChrInfo" = queryChrInfo,
+                "subjectSpecies" = subjectSpecies(),
                 "subjectChrInfo" = subjectChrInfo,
                 "anchorSeed" = anchorSeed
             )
