@@ -326,10 +326,23 @@ observeEvent(input$selected_anchors, {
 
     ## shiny transferred data are nested lists
     ## not friendly
-    output$selected_anchors  <- renderDT({
+    print(input$selected_anchors %>% unlist())
+    output$selected_anchors  <- DT::renderDataTable({
         input$selected_anchors %>%
-        as_tibble() %>%
-        unnest(cols = colnames(.data))
+            as_tibble() %>%
+            dplyr::rename(
+                       "QueryGene" = queryGene,
+                       "QueryChr" = chr_query,
+                       "QueryStart" = start_query,
+                       "QueryEnd" = end_query,
+                       "QueryStrand" = strand_query,
+                       "SubjectGene" = subjectGene,
+                       "SubjectChr" = chr_subject,
+                       "SubjectStart" = start_subject,
+                       "SubjectEnd" = end_subject,
+                       "SubjectStrand" = strand_subject
+                   ) %>%
+            unnest(cols = c(QueryGene,QueryChr,QueryStart,QueryEnd,QueryStrand,SubjectGene,SubjectChr,SubjectStart,SubjectEnd,SubjectStrand))
     }, selection="single", rownames = FALSE, server = TRUE)
 
     output$dotviewTable <- renderUI({
