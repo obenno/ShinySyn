@@ -22,6 +22,10 @@ function plotMacroSynteny(macroSyntenyData){
     var subjectChrInfo = convertShinyData(macroSyntenyData.subjectChrInfo);
     var ribbonData = convertShinyData(macroSyntenyData.ribbon);
 
+    // sort ribbonData according to ribbon width (descending)
+    ribbonData.sort(function(a, b){
+        return (b.queryEnd - b.queryStart) - (a.queryEnd - a.queryStart);
+    });
     console.log(queryChrInfo);
     console.log(subjectChrInfo);
     console.log(ribbonData);
