@@ -262,13 +262,17 @@ observeEvent(input$selected_macroRegion, {
                start >= microSubjectStart,
                end <= microSubjectEnd)
 
-    ## firstly filter anchors, retain the one with highest score value
-    ## this behaviour should be the same as generating i1 blocks in mcscan doc
     synteny$selectedAnchors <- synteny$anchor_full %>%
         filter(q_Gene %in% synteny$selectedQueryRegion$gene,
-               s_Gene %in% synteny$selectedSubjectRegion$gene) %>%
-        group_by(q_Gene) %>%
-        summarise(s_Gene  = first(s_Gene, order_by = desc(score)))
+               s_Gene %in% synteny$selectedSubjectRegion$gene)
+
+    ## firstly filter anchors, retain the one with highest score value
+    ## this behaviour should be the same as generating i1 blocks in mcscan doc
+    if(input$oneBestSubject){
+        synteny$selectedAnchors <- synteny$selectedAnchors %>%
+            group_by(q_Gene) %>%
+            summarise(s_Gene  = first(s_Gene, order_by = desc(score)))
+    }
 
     ## Added genomics coordinates to anchors
     synteny$selectedAnchors <- synteny$selectedAnchors %>%

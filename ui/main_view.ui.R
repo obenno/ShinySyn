@@ -12,6 +12,7 @@ mainView_ui <- tabPanel(
                     value = TRUE,
                     status = "primary"
                 ),
+                h5("Macro Synteny"),
                 shinyWidgets::radioGroupButtons(
                     inputId = "macroPlotMode",
                     label = "Choose macro synteny layout",
@@ -22,6 +23,13 @@ mainView_ui <- tabPanel(
                     inputId = "ribbonColor",
                     label = "Ribbon Color",
                     value = "grey"
+                ),
+                h5("Micro Synteny"),
+                awesomeCheckbox(
+                    inputId = "oneBestSubject",
+                    label = HTML("Extract <strong>one best</strong> Subject"),
+                    value = TRUE,
+                    status = "primary"
                 )
             )
         ),
