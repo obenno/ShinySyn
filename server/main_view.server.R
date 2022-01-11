@@ -296,7 +296,8 @@ observeEvent(input$selected_macroRegion, {
         dplyr::rename(s_GeneChr = chr,
                       s_GeneStart = start,
                       s_GeneEnd = end,
-                      s_GeneStrand = strand)
+                      s_GeneStrand = strand) %>%
+        arrange(q_GeneChr, q_GeneStart, q_GeneEnd)
 
     ## Put all anchor infor into result table
     output$microAnchor_out <- DT::renderDataTable({
