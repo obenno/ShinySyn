@@ -7,6 +7,23 @@ pipeline_ui <- tabPanel(
                "MCScan Pipeline")
         )
     ),
+    fluidRow(
+        column(3,
+               div(class = "boxLike",
+                   style="background-color: #FAF9F6;",
+                   h4(icon("cog"), "Settings"),
+                   numericInput(
+                       inputId = "cscore",
+                       label = "Input cscore cut-off",
+                       value = 0.99,
+                       min = 0,
+                       max = 1,
+                       step = 0.1,
+                       width = "100%"
+                   )
+                   )
+               ),
+        column(9,
     div(class="boxLike",
     fluidRow(
         column(
@@ -127,7 +144,8 @@ pipeline_ui <- tabPanel(
                 p("Tang, H., Bowers, J. E., Wang, X., Ming, R., Alam, M., & Paterson, A. H. (2008). Synteny and collinearity in plant genomes. Science, 320(5875), 486-488.")
             )
         )
-        ),
+        )
+    )),
     value = "pipeline",
     icon = icon("mouse")
 )
