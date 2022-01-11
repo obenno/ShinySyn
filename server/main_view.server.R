@@ -326,7 +326,6 @@ observeEvent(input$selected_anchors, {
 
     ## shiny transferred data are nested lists
     ## not friendly
-    print(input$selected_anchors %>% unlist())
     output$selected_anchors  <- DT::renderDataTable({
         input$selected_anchors %>%
             as_tibble() %>%
@@ -349,7 +348,7 @@ observeEvent(input$selected_anchors, {
         tagList(
             h4("Anchor Genes:"),
             p(style="color: gray;",
-              "Please selected your region of interest from the dot plot on the left panel, the table below will be updated automatically."),
+              "Please select your region of interest from the dot plot on the left panel, the table below will be updated automatically."),
             DTOutput("selected_anchors")
         )
     })
