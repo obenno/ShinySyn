@@ -45,7 +45,9 @@ queryBed <- reactive({
     req(queryBedFile())
     if(file.exists(queryBedFile())){
         vroom(queryBedFile(),
-              col_names = c("chr", "start","end","gene", "score", "strand"))
+              col_names = c("chr", "start","end","gene", "score", "strand")) %>%
+            mutate(chr = factor(chr, levels = unique(chr))) %>%
+            arrange(chr, start, end)
     }else{
         NULL
     }
@@ -55,7 +57,9 @@ subjectBed <- reactive({
     req(subjectBedFile())
     if(file.exists(subjectBedFile())){
         vroom(subjectBedFile(),
-              col_names = c("chr", "start","end","gene", "score", "strand"))
+              col_names = c("chr", "start","end","gene", "score", "strand")) %>%
+            mutate(chr = factor(chr, levels = unique(chr))) %>%
+            arrange(chr, start, end)
     }else{
        NULL
     }
@@ -112,70 +116,142 @@ observeEvent(input$macroSynteny, {
     }else if(is.null(anchorLiftedFile()) || !file.exists(anchorLiftedFile())){
         shinyalert("Oops!", "Anchor lifted file  doesn't exist, please use MCscan pipeline first or upload your own anchor lifted file", type = "error")
     }else{
-        ## generate anchor simple
         anchorFile_new <- tempfile()
-        system(paste0("python -m jcvi.compara.synteny screen ", anchorFile(), " ", anchorFile_new, " --minspan=30 --simple --qbed=", queryBedFile(), " --sbed=", subjectBedFile()))
-        anchorFile_simple <- paste0(tempdir(), "/",
-                                    str_replace(basename(anchorFile_new), regex("\\..*"), ""),
-                                    ".simple")
+        system(paste0("awk 'BEGIN{blockID=0}{if($1~/^##/){blockID+=1;}else{print blockID\"\\t\"$0}}' ", anchorFile(), " > ", anchorFile_new))
+        anchorNew <- vroom(
+            anchorFile_new,
+            col_names = c("blockID", "queryGene", "subjectGene", "score")) %>%
+            inner_join(queryBed(),
+                       by = c("queryGene" = "gene"),
+                       suffix = c(".anchor", ".bed")) %>%
+            dplyr::rename("queryChr" = chr,
+                          "queryStart" = start,
+                          "queryEnd" = end,
+                          "queryStrand" = strand) %>%
+            select(blockID,
+                   queryGene, queryChr,
+                   queryStart, queryEnd,
+                   subjectGene) %>%
+            inner_join(subjectBed(),
+                       by = c("subjectGene" = "gene"),
+                       suffix = c(".anchor", ".bed")) %>%
+            dplyr::rename("subjectChr" = chr,
+                          "subjectStart" = start,
+                          "subjectEnd" = end,
+                          "subjectStrand" = strand) %>%
+            select(blockID,
+                   queryGene, queryChr,
+                   queryStart, queryEnd,
+                   subjectGene, subjectChr,
+                   subjectStart, subjectEnd)
 
-        ## Read data
-        anchor_simple <- vroom(
-            anchorFile_simple,
-            col_names = c("q_startGene","q_endGene",
-                          "s_startGene","s_endGene",
-                          "score","orientation")
+        get_anchorGene <- function(gene){
+            return(paste(gene, collapse = ","))
+        }
+
+        get_spanGenes <- function(chr, start, end, bed){
+            bed %>%
+                filter(
+                    chr == {{ chr }},
+                    start >= {{ start }},
+                    end <= {{ end }}
+                ) %>%
+                arrange(chr, start, end) %>%
+                pull(gene)
+        }
+
+        anchorSimple <- anchorNew %>%
+            group_by(blockID) %>%
+            summarize(
+                summarized_queryChr = unique(queryChr),
+                summarized_queryStart = min(queryStart),
+                summarized_queryEnd = max(queryEnd),
+                summarized_queryAnchorList = get_anchorGene(queryGene),
+                summarized_subjectChr = unique(subjectChr),
+                summarized_subjectStart = min(subjectStart),
+                summarized_subjectEnd = max(subjectEnd),
+                summarized_subjectAnchorList = get_anchorGene(subjectGene)
+            ) %>%
+            mutate(
+                summarized_queryAnchorList = str_split(summarized_queryAnchorList, ","),
+                summarized_subjectAnchorList = str_split(summarized_subjectAnchorList, ",")
+            )
+
+        querySpanList <- pmap(
+            .l = list(anchorSimple$summarized_queryChr,
+                      anchorSimple$summarized_queryStart,
+                      anchorSimple$summarized_queryEnd),
+            .f=get_spanGenes, queryBed()
         )
 
-        ## Process anchor_simple
-        anchor_simple <- anchor_simple %>%
-            inner_join(queryBed(),
-                       by = c("q_startGene" = "gene"),
-                       suffix = c(".anchor", ".bed")) %>%
-            select(q_startGene, q_endGene,
-                   s_startGene, s_endGene,
-                   score.anchor, orientation,
-                   chr, start) %>%
-            dplyr::rename(score = score.anchor,
-                   queryChr = chr,
-                   queryStart = start)
+        subjectSpanList <- pmap(
+            .l = list(anchorSimple$summarized_subjectChr,
+                      anchorSimple$summarized_subjectStart,
+                      anchorSimple$summarized_subjectEnd),
+            .f=get_spanGenes, subjectBed()
+        )
 
-        anchor_simple <- anchor_simple %>%
-            inner_join(queryBed(),
-                       by = c("q_endGene" = "gene"),
-                       suffix = c(".anchor", ".bed")) %>%
-            select(q_startGene, q_endGene,
-                   s_startGene, s_endGene,
-                   score.anchor, orientation,
-                   queryChr, queryStart, end) %>%
-            dplyr::rename(score = score.anchor,
-                   queryEnd = end)
+        anchorSimple <- anchorSimple %>%
+            mutate(
+                summarized_querySpanList = querySpanList,
+                summarized_subjectSpanList = subjectSpanList
+            ) %>%
+            mutate(
+                aspan = lengths(summarized_querySpanList),
+                bspan = lengths(summarized_subjectSpanList),
+                asize = lengths(summarized_queryAnchorList),
+                bsize = lengths(summarized_subjectAnchorList)
+            ) %>%
+            mutate(
+                a_idx = map2(summarized_queryAnchorList,
+                             summarized_querySpanList, .f = match),
+                b_idx = map2(summarized_subjectAnchorList,
+                             summarized_subjectSpanList, .f = match)
+            ) %>%
+            mutate(
+                orientation = map2_chr(a_idx, b_idx,
+                                       .f = function(x, y){
+                                           slope <- coefficients(lm(y ~ x))[2]
+                                           if(slope<0){
+                                               return("-")
+                                           }else{
+                                               return("+")
+                                           }
+                                       })
+            ) %>%
+            mutate(
+                summarized_q_startGene = map_chr(summarized_querySpanList,1),
+                summarized_q_endGene = map_chr(summarized_querySpanList, .f=function(x){x[length(x)]}),
+                summarized_s_startGene = map_chr(summarized_subjectSpanList, 1),
+                summarized_s_endGene = map_chr(summarized_subjectSpanList, .f=function(x){x[length(x)]})
+            ) %>%
+            dplyr::rename(
+                       queryChr = summarized_queryChr,
+                       queryStart = summarized_queryStart,
+                       queryEnd = summarized_queryEnd,
+                       q_startGene = summarized_q_startGene,
+                       q_endGene = summarized_q_endGene,
+                       subjectChr = summarized_subjectChr,
+                       subjectStart = summarized_subjectStart,
+                       subjectEnd = summarized_subjectEnd,
+                       s_startGene = summarized_s_startGene,
+                       s_endGene = summarized_s_endGene
+                   ) %>%
+            mutate(
+                score = as.integer(sqrt(aspan * bspan))
+            ) %>%
+            select(
+                -contains("List"),
+                -c(a_idx, b_idx)
+            )
 
-        anchor_simple <- anchor_simple %>%
-            inner_join(subjectBed(),
-                       by = c("s_startGene" = "gene"),
-                       suffix = c(".anchor", ".bed")) %>%
-            select(q_startGene, q_endGene,
-                   s_startGene, s_endGene,
-                   score.anchor, orientation,
-                   queryChr, queryStart, queryEnd,
-                   chr, start) %>%
-            dplyr::rename(score = score.anchor,
-                   subjectChr = chr,
-                   subjectStart = start)
-
-        anchor_simple <- anchor_simple %>%
-            inner_join(subjectBed(),
-                       by = c("s_endGene" = "gene"),
-                       suffix = c(".anchor", ".bed")) %>%
-            select(q_startGene, q_endGene,
-                   s_startGene, s_endGene,
-                   score.anchor, orientation,
-                   queryChr, queryStart, queryEnd,
-                   subjectChr, subjectStart,
-                   end) %>%
-            dplyr::rename(score = score.anchor,
-                   subjectEnd = end)
+        ## Filter anchor file by minsize and minspan
+        minsize <- 0
+        minspan <- 30
+        anchorSimple <- anchorSimple %>%
+            filter(asize >= minsize & bsize >= minsize) %>%
+            filter(aspan >= minspan & bspan >= minspan)
+        ##write_tsv(anchorSimple, file = paste0(tempdir(), "/1111"))
 
         ## Process anchor_full
         anchor_full <- vroom(
@@ -192,7 +268,7 @@ observeEvent(input$macroSynteny, {
             filter(chr %in% input$synteny_subject_chr) %>%
             arrange(factor(chr, levels = input$synteny_subject_chr),start)
 
-        anchor_simple <- anchor_simple %>%
+        anchorSimple <- anchorSimple %>%
             filter(queryChr %in% input$synteny_query_chr & subjectChr %in% input$synteny_subject_chr)
 
         ## Filter and order anchor_full
@@ -214,14 +290,14 @@ observeEvent(input$macroSynteny, {
             "queryChrInfo" = queryChrInfo,
             "subjectSpecies" = subjectSpecies(),
             "subjectChrInfo" = subjectChrInfo,
-            "ribbon" = anchor_simple,
+            "ribbon" = anchorSimple,
             "plotMode" = plotMode
         )
         session$sendCustomMessage(type = "plotMacroSynteny", macro_synteny_data)
 
         ## Generate dot_view_data
         if(input$generateDotPlot){
-            anchorSeed <- read_tsv(anchorFile(), comment ="#",
+            anchorSeed <- vroom(anchorFile(), comment ="#",
                                     col_names = c("queryGene", "subjectGene", "mcscan_score")) %>%
                 inner_join(synteny$queryBed, by = c("queryGene" = "gene")) %>%
                 inner_join(synteny$subjectBed,
@@ -247,40 +323,23 @@ observeEvent(input$macroSynteny, {
 observeEvent(input$selected_macroRegion, {
     ## The start and end gene were from 5' to 3' order on the genome
     ## no matter the orientation relationship between query and subject region
-    selectedRegion_queryStartGene <- input$selected_macroRegion[["q_startGene"]]
-    selectedRegion_queryEndGene <- input$selected_macroRegion[["q_endGene"]]
-    selectedRegion_subjectStartGene <- input$selected_macroRegion[["s_startGene"]]
-    selectedRegion_subjectEndGene <- input$selected_macroRegion[["s_endGene"]]
 
-    microQueryChr <- synteny$queryBed %>%
-        filter(gene == selectedRegion_queryStartGene) %>%
-        pull(chr)
-    microQueryStart <- synteny$queryBed %>%
-        filter(gene == selectedRegion_queryStartGene) %>%
-        pull(start)
-    microQueryEnd <- synteny$queryBed %>%
-        filter(gene == selectedRegion_queryEndGene) %>%
-        pull(end)
+    macroQueryChr <- input$selected_macroRegion[["macroQueryChr"]]
+    macroQueryStart <- input$selected_macroRegion[["macroQueryStart"]]
+    macroQueryEnd <- input$selected_macroRegion[["macroQueryEnd"]]
+    macroSubjectChr <- input$selected_macroRegion[["macroSubjectChr"]]
+    macroSubjectStart <- input$selected_macroRegion[["macroSubjectStart"]]
+    macroSubjectEnd <- input$selected_macroRegion[["macroSubjectEnd"]]
 
     synteny$selectedQueryRegion <- synteny$queryBed %>%
-        filter(chr == microQueryChr,
-               start >= microQueryStart,
-               end <= microQueryEnd)
-
-    microSubjectChr <- synteny$subjectBed %>%
-        filter(gene == selectedRegion_subjectStartGene) %>%
-        pull(chr)
-    microSubjectStart <- synteny$subjectBed %>%
-        filter(gene == selectedRegion_subjectStartGene) %>%
-        pull(start)
-    microSubjectEnd <- synteny$subjectBed %>%
-        filter(gene == selectedRegion_subjectEndGene) %>%
-        pull(end)
+        filter(chr == macroQueryChr,
+               start >= macroQueryStart,
+               end <= macroQueryEnd)
 
     synteny$selectedSubjectRegion <- synteny$subjectBed %>%
-        filter(chr == microSubjectChr,
-               start >= microSubjectStart,
-               end <= microSubjectEnd)
+        filter(chr == macroSubjectChr,
+               start >= macroSubjectStart,
+               end <= macroSubjectEnd)
 
     synteny$selectedAnchors <- synteny$anchor_full %>%
         filter(q_Gene %in% synteny$selectedQueryRegion$gene,

@@ -308,16 +308,20 @@ function plotMacroSynteny(macroSyntenyData){
             .on("click", function(){
                 const data = d3.select(this)
                       .data();
-                const q_startGene = data[0].q_startGene;
-                const q_endGene = data[0].q_endGene;
-                const s_startGene = data[0].s_startGene;
-                const s_endGene = data[0].s_endGene;
+                const macroQueryChr = data[0].queryChr;
+                const macroQueryStart = data[0].queryStart;
+                const macroQueryEnd = data[0].queryEnd;
+                const macroSubjectChr = data[0].subjectChr;
+                const macroSubjectStart = data[0].subjectStart;
+                const macroSubjectEnd = data[0].subjectEnd;
                 Shiny.setInputValue("selected_macroRegion",
                                     {
-                                        "q_startGene": q_startGene,
-                                        "q_endGene": q_endGene,
-                                        "s_startGene": s_startGene,
-                                        "s_endGene": s_endGene
+                                        "macroQueryChr": macroQueryChr,
+                                        "macroQueryStart": macroQueryStart,
+                                        "macroQueryEnd": macroQueryEnd,
+                                        "macroSubjectChr": macroSubjectChr,
+                                        "macroSubjectStart": macroSubjectStart,
+                                        "macroSubjectEnd": macroSubjectEnd
                                     }
                                    );
             });
@@ -566,18 +570,22 @@ function plotMacroSynteny(macroSyntenyData){
               .on("click", function(){
                   const data = d3.select(this)
                         .data();
-                  const q_startGene = data[0].q_startGene;
-                  const q_endGene = data[0].q_endGene;
-                  const s_startGene = data[0].s_startGene;
-                  const s_endGene = data[0].s_endGene;
+                  const macroQueryChr = data[0].queryChr;
+                  const macroQueryStart = data[0].queryStart;
+                  const macroQueryEnd = data[0].queryEnd;
+                  const macroSubjectChr = data[0].subjectChr;
+                  const macroSubjectStart = data[0].subjectStart;
+                  const macroSubjectEnd = data[0].subjectEnd;
                   Shiny.setInputValue("selected_macroRegion",
-                                      {
-                                        "q_startGene": q_startGene,
-                                        "q_endGene": q_endGene,
-                                        "s_startGene": s_startGene,
-                                        "s_endGene": s_endGene
-                                      }
-                                     );
+                                    {
+                                        "macroQueryChr": macroQueryChr,
+                                        "macroQueryStart": macroQueryStart,
+                                        "macroQueryEnd": macroQueryEnd,
+                                        "macroSubjectChr": macroSubjectChr,
+                                        "macroSubjectStart": macroSubjectStart,
+                                        "macroSubjectEnd": macroSubjectEnd
+                                    }
+                                   );
               });
         // center chr labels
         svg.selectAll("text")
