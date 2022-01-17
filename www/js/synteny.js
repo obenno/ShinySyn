@@ -785,10 +785,13 @@ function plotSelectedMicroSynteny(microSyntenyData){
     console.log(regionData);
 
     // If too few genes, then no heatmap will be drawn, only genes
-    var querGeneNum = d3.sum(regionData.map(e => e.queryGenes.length));
+    var queryGeneNum = d3.sum(regionData.map(e => e.queryGenes.length));
     // push selectedRegionData out of heatmap code
-    var selectedRegionData = regionData.slice(regionData.length - 4, regionData.length);
-
+    if(queryGeneNum < 100){
+        var selectedRegionData = regionData;
+    }else{
+        var selectedRegionData = regionData.slice(regionData.length - 4, regionData.length);
+    }
     // Codes below is for generating heatmap with brushX
     let colorScale = d3.scaleSequential(d3.interpolatePurples)
         .domain([0, d3.max(regionData.map(d => d.queryGenes.length))]);
@@ -915,8 +918,8 @@ function plotSelectedMicroSynteny(microSyntenyData){
                                              "microQueryGroup",
                                              "microSubjectGroup",
                                              "microRibbons");
-    // if two few genes in the selected region, don't draw heatmap
-    if(querGeneNum>100){
+    // if too few genes in the selected region, don't draw heatmap
+    if(queryGeneNum>100){
         d3.select("#geneDensityBlock")
             .append(() => heatmapSVG.node());
     }

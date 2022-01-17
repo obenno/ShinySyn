@@ -355,7 +355,7 @@ observeEvent(input$selected_macroRegion, {
 
     ## Added genomics coordinates to anchors
     synteny$selectedAnchors <- synteny$selectedAnchors %>%
-        inner_join(synteny$selectedQueryRegion,
+        full_join(synteny$selectedQueryRegion,
                    by = c("q_Gene" = "gene"),
                    suffix = c(".anchor", ".bed")) %>%
         select(q_Gene,
@@ -365,7 +365,7 @@ observeEvent(input$selected_macroRegion, {
                       q_GeneStart = start,
                       q_GeneEnd = end,
                       q_GeneStrand = strand) %>%
-        left_join(synteny$selectedSubjectRegion,
+        full_join(synteny$selectedSubjectRegion,
                   by = c("s_Gene" = "gene"),
                   suffix = c(".anchor", ".bed")) %>%
         select(q_Gene,
@@ -376,7 +376,7 @@ observeEvent(input$selected_macroRegion, {
                       s_GeneStart = start,
                       s_GeneEnd = end,
                       s_GeneStrand = strand) %>%
-        arrange(q_GeneChr, q_GeneStart, q_GeneEnd)
+        arrange(q_GeneChr, q_GeneStart, q_GeneEnd, s_GeneChr, s_GeneStart, s_GeneEnd)
 
     ## Put all anchor infor into result table
     output$microAnchor_out <- DT::renderDataTable({
