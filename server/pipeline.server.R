@@ -9,12 +9,35 @@ observe({
                 )
 })
 
+mcscan_result <- reactivePoll(1000, session,
+      ## This function returns the time stamp of data file
+      checkFunc = function() {
+          queryBedFile <- paste0(tempdir(), "/", input$query_species, ".bed")
+          subjectBedFile <- paste0(tempdir(), "/", input$subject_species, ".bed")
+          anchorSeed <- paste0(tempdir(), "/", input$query_species, ".", input$subject_species, ".anchors")
+          anchorLifted <- paste0(tempdir(), "/", input$query_species, ".", input$subject_species, ".lifted.anchors")
+          if (file.exists(queryBedFile) &&
+              file.exists(subjectBedFile) &&
+              file.exists(anchorSeed) &&
+              file.exists(anchorLifted)){
+              list(
+                  file.info(queryBedFile)$mtime[1],
+                  file.info(subjectBedFile)$mtime[1],
+                  file.info(anchorSeed)$mtime[1],
+                  file.info(anchorLifted)$mtime[1]
+              )
+          }else{
+              ""
+          }
+      },
+      valueFunc = function() {
+        ## do nothing
+      }
+    )
+
 observe({
     toggleState(id = "mcscan_download",
-                file.exists(paste0(tempdir(), "/", input$query_species, ".bed")) &&
-                file.exists(paste0(tempdir(), "/", input$subject_species, ".bed")) &&
-                file.exists(paste0(tempdir(), "/", input$query_species, ".", input$subject_species, ".anchors")) &&
-                file.exists(paste0(tempdir(), "/", input$query_species, ".", input$subject_species, ".lifted.anchors"))
+                mcscan_result()
                 )
 })
 
