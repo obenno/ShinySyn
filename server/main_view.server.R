@@ -105,17 +105,18 @@ observe({
 
 observeEvent(input$macroSynteny, {
 
-    ## show spinner
-    mainView_waiter$show()
-
     output$microAnchor_out <- NULL
-    if(is.null(queryBed()) || is.null(subjectBed())){
-        shinyalert("Oops!", "query or subject BED file doesn't exist, please use MCscan pipeline first or upload your own BED file", type = "error")
+    if(querySpecies() == "" || subjectSpecies() == ""){
+        shinyalert("Oops!", "Please input query and subject species name", type = "error")
+    }else if(is.null(queryBedFile()) || is.null(subjectBedFile())){
+        shinyalert("Oops!", "Query or subject BED file doesn't exist, please use MCscan pipeline first or upload your own BED file", type = "error")
     }else if(is.null(anchorFile()) || !file.exists(anchorFile())){
         shinyalert("Oops!", "Anchor file doesn't exist, please use MCscan pipeline first or upload your own anchor file", type = "error")
     }else if(is.null(anchorLiftedFile()) || !file.exists(anchorLiftedFile())){
         shinyalert("Oops!", "Anchor lifted file  doesn't exist, please use MCscan pipeline first or upload your own anchor lifted file", type = "error")
     }else{
+        ## show spinner
+        mainView_waiter$show()
         anchorFile_new <- tempfile()
         system(paste0("awk 'BEGIN{blockID=0}{if($1~/^##/){blockID+=1;}else{print blockID\"\\t\"$0}}' ", anchorFile(), " > ", anchorFile_new))
         anchorNew <- vroom(
