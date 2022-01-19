@@ -35,7 +35,7 @@ mainView_ui <- tabPanel(
                 colourInput(
                     inputId = "macroRibbonColor",
                     label = "Macro Ribbon Color",
-                    value = "grey"
+                    value = "#808080"
                 ),
                 hr(class = "setting"),
                 h5("Micro Synteny"),
