@@ -711,11 +711,19 @@ var regionData = null;
 // bed data will be used by center queryGene function
 var micro_queryBed = null;
 var micro_subjectBed = null;
+// color setup of micro synteny
+var forwardColor = null;
+var reverseColor = null;
+var microRibbonColor = null;
 // brush and hScale needs to be accessed by center micro synteny function
 var brush = null;
 var hScale = null;
 
 function plotSelectedMicroSynteny(microSyntenyData){
+
+    forwardColor = microSyntenyData.microForwardColor;
+    reverseColor = microSyntenyData.microReverseColor;
+    microRibbonColor = microSyntenyData.microRibbonColor;
 
     micro_queryBed = convertShinyData(microSyntenyData.microQueryRegion);
     // Add elementID for query data
@@ -894,6 +902,7 @@ function plotSelectedMicroSynteny(microSyntenyData){
 
         const microSVG = generate_microSytenySVG(selectedRegionData, micro_subjectBed,
                                                  querySpecies, subjectSpecies,
+                                                 forwardColor, reverseColor, microRibbonColor,
                                                  microSyntenyHeight, microSyntenyMargin,
                                                  "microQueryGroup",
                                                  "microSubjectGroup",
@@ -920,6 +929,7 @@ function plotSelectedMicroSynteny(microSyntenyData){
     console.log(micro_subjectBed);
     const microSVG = generate_microSytenySVG(selectedRegionData, micro_subjectBed,
                                              querySpecies, subjectSpecies,
+                                             forwardColor, reverseColor, microRibbonColor,
                                              microSyntenyHeight, microSyntenyMargin,
                                              "microQueryGroup",
                                              "microSubjectGroup",
@@ -940,7 +950,7 @@ function plotSelectedMicroSynteny(microSyntenyData){
 
 
 function plot_microSyntenyGenes(svg, myData, xScale, yaxis,
-                                microRegionStart, microRegionEnd, groupClass){
+                                forwardColor, reverseColor, groupClass){
     //svg: d3 selected svg object
     //xScale: d3 scale of x axis
     //yaxis: y position of the plot in the svg object
@@ -966,7 +976,7 @@ function plot_microSyntenyGenes(svg, myData, xScale, yaxis,
             return xScale(d.end) - xScale(d.start);
         })
         .attr('height', 20)
-        .style('fill', d => d.strand === '+' ? '#af8dc3' : '#7fbf7b')
+        .style('fill', d => d.strand === '+' ? forwardColor : reverseColor)
         .attr("data-tippy-content", d => d.gene);
         // .append('title')
     // .text(d => d.id);
@@ -1003,7 +1013,7 @@ function createLinkLinePath(d){
   return lineGenerator(pathInput);
 }
 
-function createPath(svg, pathData, pathClass = "ribbons"){
+function createPath(svg, pathData, ribbonColor, pathClass = "ribbons"){
   // used after creating rectangles
   // popular pathInput data
   const pathInput = [];
@@ -1030,7 +1040,7 @@ function createPath(svg, pathData, pathClass = "ribbons"){
     .attr("d", function(d, i){
       return createLinkPolygonPath(d);
     })
-    .attr("fill", "#10218b")
+    .attr("fill", ribbonColor)
     .style("mix-blend-mode", "multiply")
         .style("fill-opacity", 0.6)
         .attr("data-tippy-content", d => d.pathTitle);
@@ -1192,6 +1202,7 @@ function subjectAxis(g, xScale){
 
 function generate_microSytenySVG(inputRegionData, inputSubjectBedData,
                                  querySpecies, subjectSpecies,
+                                 forwardColor, reverseColor, ribbonColor,
                                  plotHeight, margin,
                                  queryGroupClass = "queryGroup",
                                  subjectGroupClass = "subjectGroup",
@@ -1277,7 +1288,7 @@ function generate_microSytenySVG(inputRegionData, inputSubjectBedData,
     svg.append(() => plot_microSyntenyGenes(svg, queryData,
         queryScale,
         queryY,
-        queryRegionStart, queryRegionEnd,
+        forwardColor, reverseColor,
         queryGroupClass));
 
     // subjectData might contain empty entry (dot in the data)
@@ -1292,11 +1303,11 @@ function generate_microSytenySVG(inputRegionData, inputSubjectBedData,
     svg.append(() => plot_microSyntenyGenes(svg, subjectData,
         subjectScale,
         subjectY,
-        subjectRegionStart, subjectRegionEnd,
+        forwardColor, reverseColor,
         subjectGroupClass));
 
     // create path polygon
-    svg.append(() => createPath(svg, pathData, ribbonClass));
+    svg.append(() => createPath(svg, pathData, ribbonColor, ribbonClass));
     // Add axises
     axisQuery.call(queryAxis, queryScale);
     axisSubject.call(subjectAxis, subjectScale);
@@ -1334,7 +1345,7 @@ function generate_microSytenySVG(inputRegionData, inputSubjectBedData,
             });
 
         svg.select("." + ribbonClass).remove();
-        svg.append(() => createPath(svg, pathData, ribbonClass));
+        svg.append(() => createPath(svg, pathData, ribbonColor, ribbonClass));
 
         //zoom synteny axises
         axisQuery.call(queryAxis, queryXZ);
@@ -1414,6 +1425,7 @@ Shiny.addCustomMessageHandler("center_microSynteny", function(selectedQueryGene)
     let selectedRegionData = selectedIdxAll.map(d => regionData[d]);
     const microSVG = generate_microSytenySVG(selectedRegionData, micro_subjectBed,
                                              querySpecies, subjectSpecies,
+                                             forwardColor, reverseColor, microRibbonColor,
                                              microSyntenyHeight, microSyntenyMargin,
                                              "microQueryGroup",
                                              "microSubjectGroup",
