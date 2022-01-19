@@ -103,6 +103,20 @@ observe({
                        choices = x)
 })
 
+observeEvent(input$macroPlotMode, {
+    ## setup different default color scheme for two macro synteny layout
+    if(input$macroPlotMode == "Circular"){
+        updateColourInput(session, "macroQueryColor", value = "#ca0020")
+        updateColourInput(session, "macroSubjectColor", value = "#0571b0")
+    }else if(input$macroPlotMode == "Parallel"){
+        updateColourInput(session, "macroQueryColor", value = "#69a3b2")
+        updateColourInput(session, "macroSubjectColor", value = "#B27869")
+    }else{
+        updateColourInput(session, "macroQueryColor", value = "#69a3b2")
+        updateColourInput(session, "macroSubjectColor", value = "#B27869")
+    }
+})
+
 observeEvent(input$macroSynteny, {
 
     output$microAnchor_out <- NULL
@@ -292,7 +306,10 @@ observeEvent(input$macroSynteny, {
             "subjectSpecies" = subjectSpecies(),
             "subjectChrInfo" = subjectChrInfo,
             "ribbon" = anchorSimple,
-            "plotMode" = plotMode
+            "plotMode" = plotMode,
+            "queryChrColor" = input$macroQueryColor,
+            "subjectChrColor" = input$macroSubjectColor,
+            "ribbonColor" = input$macroRibbonColor
         )
         session$sendCustomMessage(type = "plotMacroSynteny", macro_synteny_data)
 
@@ -385,9 +402,12 @@ observeEvent(input$selected_macroRegion, {
     }, selection="single", rownames = FALSE, server = TRUE)
 
     micro_synteny_data <- list(
-        microQueryRegion = synteny$selectedQueryRegion,
-        microSubjectRegion = synteny$selectedSubjectRegion,
-        microAnchors = synteny$selectedAnchors
+        "microQueryRegion" = synteny$selectedQueryRegion,
+        "microSubjectRegion" = synteny$selectedSubjectRegion,
+        "microAnchors" = synteny$selectedAnchors,
+        "microForwardColor" = input$forwardGeneColor,
+        "microReverseColor" = input$reverseGeneColor,
+        "microRibbonColor" = input$microRibbonColor
     )
 
     session$sendCustomMessage(type = "plotSelectedMicroSynteny", micro_synteny_data)

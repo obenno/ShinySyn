@@ -21,9 +21,13 @@ var subjectSpecies = null;
 
 function plotMacroSynteny(macroSyntenyData){
 
+    console.log(macroSyntenyData);
     var queryChrInfo = convertShinyData(macroSyntenyData.queryChrInfo);
     var subjectChrInfo = convertShinyData(macroSyntenyData.subjectChrInfo);
     var ribbonData = convertShinyData(macroSyntenyData.ribbon);
+    let queryChrColor = macroSyntenyData.queryChrColor;
+    let subjectChrColor = macroSyntenyData.subjectChrColor;
+    let macroRibbonColor = macroSyntenyData.ribbonColor;
     querySpecies = macroSyntenyData.querySpecies;
     subjectSpecies = macroSyntenyData.subjectSpecies;
 
@@ -31,17 +35,19 @@ function plotMacroSynteny(macroSyntenyData){
     ribbonData.sort(function(a, b){
         return (b.queryEnd - b.queryStart) - (a.queryEnd - a.queryStart);
     });
-    console.log(querySpecies);
-    console.log(queryChrInfo);
-    console.log(subjectChrInfo);
-    console.log(ribbonData);
+    // console.log(querySpecies);
+    // console.log(queryChrInfo);
+    // console.log(subjectChrInfo);
+    // console.log(ribbonData);
+    console.log(queryChrColor);
+    console.log(subjectChrColor);
 
     // create svg node
     //const svg = d3.create("svg");
         //.attr("viewBox", [-width / 2, -height / 2, width, height]);
 
     // Define colors
-    var colors = d3.quantize(d3.interpolateRgb.gamma(2.2)("#ca0020", "#0571b0"),
+    var colors = d3.quantize(d3.interpolateRgb.gamma(2.2)(queryChrColor, subjectChrColor),
                              queryChrInfo.length + subjectChrInfo.length);
 
     if(macroSyntenyData.plotMode === "circular"){
@@ -284,7 +290,7 @@ function plotMacroSynteny(macroSyntenyData){
               .join("g");
 
         ribbons.append("path")
-            .attr("fill", "grey")
+            .attr("fill", macroRibbonColor)
             .attr("opacity", 0.6)
             .attr("d", d => ribbon(d.ribbonAngle, innerRadius))
             .attr("data-tippy-content", d => {
@@ -303,7 +309,7 @@ function plotMacroSynteny(macroSyntenyData){
                 d3.select(this)
                     .transition()
                     .duration(50)
-                    .style("fill", "grey");
+                    .style("fill", macroRibbonColor);
             })
             .on("click", function(){
                 const data = d3.select(this)
@@ -452,7 +458,7 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("stroke", "black")
             .attr("stroke-width", 2)
             .attr("opacity", 0.8)
-            .attr("fill", "#69a3b2")
+            .attr("fill", queryChrColor)
             .attr("ry", chrRectRy)
             .attr("data-tippy-content", (d) => "Query: " + d.chr);
 
@@ -495,7 +501,7 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("stroke", "black")
             .attr("stroke-width", 2)
             .attr("opacity", 0.8)
-            .attr("fill", "#B27869")
+            .attr("fill", subjectChrColor)
             .attr("ry", chrRectRy)
             .attr("data-tippy-content", (d) => "Subject: " + d.chr);
 
@@ -547,7 +553,7 @@ function plotMacroSynteny(macroSyntenyData){
               .data(ribbonData)
               .join("path")
               .attr("d", d => createLinkPolygonPath(d.ribbonPosition))
-              .attr("fill", "grey")
+              .attr("fill", macroRibbonColor)
               .attr("opacity", 0.6)
               .attr("data-tippy-content", d => {
                   return "<b>Query:</b> " + d.q_startGene + " : " + d.q_endGene +
@@ -565,7 +571,7 @@ function plotMacroSynteny(macroSyntenyData){
                   d3.select(this)
                       .transition()
                       .duration(50)
-                      .style("fill", "grey");
+                      .style("fill", macroRibbonColor);
               })
               .on("click", function(){
                   const data = d3.select(this)

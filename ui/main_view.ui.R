@@ -12,25 +12,53 @@ mainView_ui <- tabPanel(
                     value = TRUE,
                     status = "primary"
                 ),
+                hr(class = "setting"),
                 h5("Macro Synteny"),
                 shinyWidgets::radioGroupButtons(
                     inputId = "macroPlotMode",
                     label = "Choose macro synteny layout",
                     choices = c("Circular", "Parallel"),
+                    selected = "Parallel",
                     width = "100%",
                     status = "primary"
                 ),
                 colourInput(
-                    inputId = "ribbonColor",
-                    label = "Ribbon Color",
+                    inputId = "macroQueryColor",
+                    label = "Query Chr Color",
+                    value = "#69a3b2"
+                ),
+                colourInput(
+                    inputId = "macroSubjectColor",
+                    label = "Subject Chr Color",
+                    value = "#B27869"
+                ),
+                colourInput(
+                    inputId = "macroRibbonColor",
+                    label = "Macro Ribbon Color",
                     value = "grey"
                 ),
+                hr(class = "setting"),
                 h5("Micro Synteny"),
                 awesomeCheckbox(
                     inputId = "oneBestSubject",
                     label = HTML("Extract <strong>one best</strong> Subject"),
                     value = TRUE,
                     status = "primary"
+                ),
+                colourInput(
+                    inputId = "forwardGeneColor",
+                    label = "Forward Gene's Color ",
+                    value = "#af8dc3"
+                ),
+                colourInput(
+                    inputId = "reverseGeneColor",
+                    label = "Reverse Gene's Color ",
+                    value = "#7fbf7b"
+                ),
+                colourInput(
+                    inputId = "microRibbonColor",
+                    label = "Micro Ribbon Color",
+                    value = "#10218b"
                 )
             )
         ),

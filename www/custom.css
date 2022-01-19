@@ -42,3 +42,8 @@ body {
     padding-left: 1rem;
     padding-right: 1rem;
 }
+
+hr.setting{
+    border-top: 2px dashed black;
+    background-color: transparent;
+}
