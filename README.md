@@ -35,9 +35,9 @@ Tang, H., Bowers, J. E., Wang, X., Ming, R., Alam, M., & Paterson, A. H. (2008).
 
 ### Dependencies
 
-- jcvi/mcscan [https://github.com/tanghaibao/jcvi/wiki/MCscan-%28Python-version%29](https://github.com/tanghaibao/jcvi/wiki/MCscan-%28Python-version%29)
+- `jcvi/mcscan` ([https://github.com/tanghaibao/jcvi/wiki/MCscan-%28Python-version%29](https://github.com/tanghaibao/jcvi/wiki/MCscan-%28Python-version%29))
 
-- LASTAL [https://gitlab.com/mcfrith/last](https://gitlab.com/mcfrith/last)
+- `LASTAL` ([https://gitlab.com/mcfrith/last](https://gitlab.com/mcfrith/last))
 
 - R packages
   - `{shiny}`
@@ -51,7 +51,7 @@ Tang, H., Bowers, J. E., Wang, X., Ming, R., Alam, M., & Paterson, A. H. (2008).
   - `{tidyverse}`
   - `{vroom}`
 
-### Install packages from bioconda
+### Install packages from conda
 
 - create conda env
 
