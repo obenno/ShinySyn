@@ -1,10 +1,10 @@
 pipeline_ui <- tabPanel(
-    "MCScan Pipeline",
+    "MCscan Pipeline",
     fluidRow(
         column(
             12,
             h2(class="title",
-               "MCScan Pipeline")
+               "MCscan Pipeline")
         )
     ),
     fluidRow(

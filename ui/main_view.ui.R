@@ -74,7 +74,7 @@ mainView_ui <- tabPanel(
                 fluidRow(
                     column(
                         12,
-                        h5("Switch On to Use the Result From MCScan Pipeline Tab")
+                        h5("Switch On to Use the Result From MCscan Pipeline Tab")
                     )
                 ),
                 fluidRow(
