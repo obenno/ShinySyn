@@ -51,6 +51,14 @@ Tang, H., Bowers, J. E., Wang, X., Ming, R., Alam, M., & Paterson, A. H. (2008).
   - `{tidyverse}`
   - `{vroom}`
 
+We recommand to install the dependencies via [`conda`](https://docs.conda.io/en/latest/) 
+or directly use the docker image if [`docker`](https://docs.docker.com/) was installed. 
+Please follow their official document for installation:
+
+- miniconda: https://docs.conda.io/en/latest/miniconda.html
+
+- docker: https://docs.docker.com/get-docker/
+
 ### Install packages from conda
 
 - create conda env
@@ -69,3 +77,25 @@ git clone https://github.com/obenno/ShinySyn.git
 cd ShinySyn
 Rscript -e 'shiny::runApp()'
 ```
+
+The application will be run locally at `http://127.0.0.1:<random_port>`,
+user could open the address with google chrome or other modern browsers.
+
+### Use docker image
+
+We have prepared docker images for `ShinySyn`. With docker installed, user could simplely invoke
+the app with:
+
+```
+docker run --rm -p 3838:3838 obenno/shinysyn
+```
+
+The application will be run locally at `http://0.0.0.0:3838`, user could open
+the address with browsers.
+
+Or just pull the pre-built image from [dockerhub](https://hub.docker.com/) with:
+
+```
+docker pull obenno/shinysyn
+```
+
