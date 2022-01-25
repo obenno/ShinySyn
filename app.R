@@ -41,7 +41,7 @@ ui <- tagList(
     tags$script(src="https://unpkg.com/@popperjs/core@2"),
     tags$script(src="https://unpkg.com/tippy.js@6"),
     tags$script(src = "js/d3.min.js"),
-    tags$script(src = "js/synteny.js"),
+    tags$script(src = "js/synteny.min.js"),
     tags$script("tippy('[data-tippy-content]');")
 )
 
