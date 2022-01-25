@@ -11,7 +11,7 @@
     font-size: 1.5rem;
 }
 
-h2, h3, h4, h5, h6 {
+h1, h2, h3, h4, h5, h6 {
     font-family: 'Yusei Magic', sans-serif;
 }
 
@@ -35,7 +35,7 @@ body {
     border-radius: 15px;
 }
 
-.boxMargin{
+.boxMargin {
     margin-top: 15px;
     margin-right: 10px;
     margin-left: 10px;
@@ -43,7 +43,13 @@ body {
     padding-right: 1rem;
 }
 
-hr.setting{
+hr.setting {
     border-top: 2px dashed black;
     background-color: transparent;
+}
+
+.docImage {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
