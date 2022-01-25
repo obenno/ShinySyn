@@ -64,7 +64,14 @@ Please follow their official document for installation:
 - create conda env
 
 ```
-conda create -n shinysyn -c bioconda -c conda-forge jcvi last r-shiny r-bslib r-shinyjs r-dt r-shinywidgets r-shinyalert r-colourpicker r-waiter r-tidyverse r-vroom
+conda create -n shinysyn -c bioconda -c conda-forge jcvi last r-shiny r-bslib r-shinyjs r-dt r-shinywidgets r-shinyalert r-colourpicker r-waiter r-tidyverse r-vroom r-markdown
+```
+
+If conda is too slow, use [mamba](https://mamba.readthedocs.io/en/latest/index.html) instead
+
+```
+conda install mamba -n base -c conda-forge
+mamba create -n shinysyn -c bioconda -c conda-forge jcvi last r-shiny r-bslib r-shinyjs r-dt r-shinywidgets r-shinyalert r-colourpicker r-waiter r-tidyverse r-vroom r-markdown
 ```
 
 - activate env and run application
