@@ -9,6 +9,11 @@ If you use the `mcscan` pipeline in `ShinySyn`, please also remember to cite its
 
 Tang, H., Bowers, J. E., Wang, X., Ming, R., Alam, M., & Paterson, A. H. (2008). Synteny and collinearity in plant genomes. Science, 320(5875), 486-488.
 
+and the paper of `last`:
+
+Kiełbasa, S. M., Wan, R., Sato, K., Horton, P., & Frith, M. C. (2011). Adaptive seeds tame genomic sequence comparison. Genome research, 21(3), 487-493.
+
+
 ## Features
 
 - Interactive visualization for both macro- and microsynteny
