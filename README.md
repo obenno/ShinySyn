@@ -72,29 +72,26 @@ install it firstly.
 
 - create conda env
 
-```
-conda create -n shinysyn -c bioconda -c conda-forge jcvi last r-shiny r-bslib r-shinyjs r-dt r-shinywidgets r-shinyalert r-colourpicker r-waiter r-tidyverse r-vroom r-markdown
-```
-
-If conda is too slow, use [mamba](https://mamba.readthedocs.io/en/latest/index.html) instead
+Since conda is bit slow, use [mamba](https://mamba.readthedocs.io/en/latest/index.html) instead
 
 ```
 conda install mamba -n base -c conda-forge
-mamba create -n shinysyn -c bioconda -c conda-forge jcvi last r-shiny r-bslib r-shinyjs r-dt r-shinywidgets r-shinyalert r-colourpicker r-waiter r-tidyverse r-vroom r-markdown
+## clone app repo
+git clone https://github.com/obenno/ShinySyn.git
+## cd app directory
+cd ShinySyn
+## create conda env with yml file
+mamba env create -f shinysyn_env.yml
 ```
 
 - activate env and run application
 
 ```
 conda activate shinysyn
-## clone app repo
-git clone https://github.com/obenno/ShinySyn.git
-## cd app directory and run shiny
-cd ShinySyn
-Rscript -e 'shiny::runApp()'
+Rscript -e "options(shiny.port = 3838, shiny.host = '0.0.0.0', sass.cache = FALSE); shiny::runApp()"
 ```
 
-The application will be run locally at `http://127.0.0.1:<random_port>`,
+The application will be run locally at `http://127.0.0.1:3838`,
 user could open the address with google chrome or other modern browsers.
 
 ### Use docker image
