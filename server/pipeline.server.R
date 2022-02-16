@@ -31,14 +31,26 @@ mcscan_result <- reactivePoll(1000, session,
           }
       },
       valueFunc = function() {
-        ## do nothing
+          queryBedFile <- paste0(tempdir(), "/", input$query_species, ".bed")
+          subjectBedFile <- paste0(tempdir(), "/", input$subject_species, ".bed")
+          anchorSeed <- paste0(tempdir(), "/", input$query_species, ".", input$subject_species, ".anchors")
+          anchorLifted <- paste0(tempdir(), "/", input$query_species, ".", input$subject_species, ".lifted.anchors")
+          if(file.exists(queryBedFile) &&
+             file.exists(subjectBedFile) &&
+             file.exists(anchorSeed) &&
+             file.exists(anchorLifted)){
+              return(file.info(anchorLifted)$mtime[1])
+          }else{
+              return(NULL)
+          }
       }
-    )
+      )
 
 observe({
-    toggleState(id = "mcscan_download",
-                mcscan_result()
-                )
+    toggleState(
+        id = "mcscan_download",
+        !is.null(mcscan_result())
+    )
 })
 
 observe({
