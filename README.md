@@ -64,6 +64,10 @@ Please follow their official document for installation:
 
 - docker: https://docs.docker.com/get-docker/
 
+Windows user could use docker desktop to run `ShinySyn` as linux container. Please
+follow [this instruction](https://hub.docker.com/editions/community/docker-ce-desktop-windows) to
+install it firstly.
+
 ### Install packages from conda
 
 - create conda env
@@ -102,7 +106,7 @@ the app with:
 docker run --rm -p 3838:3838 obenno/shinysyn
 ```
 
-The application will be run locally at `http://0.0.0.0:3838`, user could open
+The application will be run locally at `http://127.0.0.1:3838`, user could open
 the address with browsers.
 
 Or just pull the pre-built image from [dockerhub](https://hub.docker.com/) with:
@@ -111,3 +115,9 @@ Or just pull the pre-built image from [dockerhub](https://hub.docker.com/) with:
 docker pull obenno/shinysyn
 ```
 
+Note: 
+
+- Windows users needs to install docker desktop, and type the same command
+above in any terminal app, e.g. `PowerShell`.
+
+- The image is a bit large, please reserve 5 GB space for it.
