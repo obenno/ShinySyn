@@ -152,7 +152,8 @@ mainView_ui <- tabPanel(
                                      "Upload Anchor Lifted File:",
                                      multiple = FALSE,
                                      width = "100%",
-                                     accept = c("text/plain", ".lifted.anchors")
+                                     accept = c("text/plain", ".lifted.anchors", ".anchors")
+                                     ## Added .anchors for OS X support, it only recognizes one suffix
                                      )
                            )
                 )

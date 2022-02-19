@@ -50,7 +50,8 @@ pipeline_ui <- tabPanel(
                       accept = c(".fasta",
                                  ".fa",
                                  ".fasta.gz",
-                                 ".fa.gz")
+                                 ".fa.gz",
+                                 ".gz") ## Added .gz for OS X support
                       )
         ),
         column(
@@ -62,7 +63,8 @@ pipeline_ui <- tabPanel(
                       accept = c(".gff",
                                  ".gff3",
                                  ".gff.gz",
-                                 ".gff3.gz")
+                                 ".gff3.gz",
+                                 ".gz") ## Added .gz for OS X support
                       )
         )
     )),
@@ -92,7 +94,8 @@ pipeline_ui <- tabPanel(
                       accept = c(".fasta",
                                  ".fa",
                                  ".fasta.gz",
-                                 ".fa.gz")
+                                 ".fa.gz",
+                                 ".gz") ## Added .gz for OS X support
                       )
         ),
         column(
@@ -104,7 +107,8 @@ pipeline_ui <- tabPanel(
                       accept = c(".gff",
                                  ".gff3",
                                  ".gff.gz",
-                                 ".gff3.gz")
+                                 ".gff3.gz",
+                                 ".gz") ## Added .gz for OS X support
                       )
         )
     )),
