@@ -115,12 +115,12 @@ observeEvent(input$mcscan_go, {
     query_cds <- tempfile(pattern=paste0(input$query_species, "."), fileext=".cds")
     subject_cds <- tempfile(pattern=paste0(input$subject_species, "."), fileext=".cds")
     if(str_detect(query_gff, ".gz$")){
-        query_cds_cmd <- paste0("zcat ", query_gff, " | gffread -x ", query_cds, " -g ", query_genome)
+        query_cds_cmd <- paste0("gunzip -c ", query_gff, " | gffread -x ", query_cds, " -g ", query_genome)
     }else{
         query_cds_cmd <- paste0("gffread -x ", query_cds, " -g ", query_genome, " ", query_gff)
     }
     if(str_detect(subject_gff, ".gz$")){
-        subject_cds_cmd <- paste0("zcat ", subject_gff, " | gffread -x ", subject_cds, " -g ", subject_genome)
+        subject_cds_cmd <- paste0("gunzip -c ", subject_gff, " | gffread -x ", subject_cds, " -g ", subject_genome)
     }else{
         subject_cds_cmd <- paste0("gffread -x ", subject_cds, " -g ", subject_genome, " ", subject_gff)
     }
