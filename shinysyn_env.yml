@@ -17,7 +17,6 @@ dependencies:
   - r-tidyverse
   - r-vroom
   - r-markdown
-  - r-shinywidgets
   - more-itertools
   - ca-certificates
   - certifi
