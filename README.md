@@ -64,8 +64,8 @@ Please follow their official document for installation:
 
 - docker: https://docs.docker.com/get-docker/
 
-Windows user could use docker desktop to run `ShinySyn` as linux container. Please
-follow [this instruction](https://hub.docker.com/editions/community/docker-ce-desktop-windows) to
+Conda env was tested on both linux and OSX. Windows user could use docker desktop to 
+run `ShinySyn` as linux container. Please follow [this instruction](https://hub.docker.com/editions/community/docker-ce-desktop-windows) to
 install it firstly.
 
 ### Install packages from conda
@@ -76,6 +76,9 @@ Since conda is bit slow, use [mamba](https://mamba.readthedocs.io/en/latest/inde
 
 ```
 conda install mamba -n base -c conda-forge
+```
+
+```
 ## clone app repo
 git clone https://github.com/obenno/ShinySyn.git
 ## cd app directory
