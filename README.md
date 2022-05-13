@@ -100,7 +100,14 @@ user could open the address with google chrome or other modern browsers.
 ### Use docker image
 
 We have prepared docker images for `ShinySyn`. With docker installed, user could simplely invoke
-the app with:
+the app with command below, and will be able to invoke the application from **"Containers/ Apps"**
+menu.
+
+```
+docker run -p 3838:3838 obenno/shinysyn
+```
+
+To remove container after usage, user could use command:
 
 ```
 docker run --rm -p 3838:3838 obenno/shinysyn
@@ -109,7 +116,7 @@ docker run --rm -p 3838:3838 obenno/shinysyn
 The application will be run locally at `http://127.0.0.1:3838`, user could open
 the address with browsers.
 
-Or just pull the pre-built image from [dockerhub](https://hub.docker.com/) with:
+To only pull the pre-built image from [dockerhub](https://hub.docker.com/), use:
 
 ```
 docker pull obenno/shinysyn
