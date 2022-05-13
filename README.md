@@ -100,14 +100,14 @@ user could open the address with google chrome or other modern browsers.
 ### Use docker image
 
 We have prepared docker images for `ShinySyn`. With docker installed, user could simplely invoke
-the app with command below, and will be able to invoke the application from **"Containers/ Apps"**
-menu.
+the app with command below, and will be able to invoke the application directly from 
+**"Containers/ Apps"** menu when opening Docker Desktop next time.
 
 ```
 docker run -p 3838:3838 obenno/shinysyn
 ```
 
-To remove container after usage, user could use command:
+To remove container after usage, use command:
 
 ```
 docker run --rm -p 3838:3838 obenno/shinysyn
