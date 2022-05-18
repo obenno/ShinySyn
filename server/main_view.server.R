@@ -272,7 +272,8 @@ observeEvent(input$macroSynteny, {
         anchor_full <- vroom(
             anchorLiftedFile(),
             col_names = c("q_Gene","s_Gene", "score"),
-            comment = "#"
+            comment = "#",
+            delim = "\t"
         )
 
         synteny$queryBed <- queryBed() %>%
@@ -315,8 +316,8 @@ observeEvent(input$macroSynteny, {
 
         ## Generate dot_view_data
         if(input$generateDotPlot){
-            anchorSeed <- vroom(anchorFile(), comment ="#",
-                                    col_names = c("queryGene", "subjectGene", "mcscan_score")) %>%
+            anchorSeed <- vroom(anchorFile(), comment ="#", delim = "\t",
+                                col_names = c("queryGene", "subjectGene", "mcscan_score")) %>%
                 inner_join(synteny$queryBed, by = c("queryGene" = "gene")) %>%
                 inner_join(synteny$subjectBed,
                            by = c("subjectGene" = "gene"),
