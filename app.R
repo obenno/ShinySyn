@@ -10,6 +10,7 @@ library(waiter)
 library(tidyverse)
 library(vroom)
 library(colourpicker)
+library(fs)
 
 ## change upload file size limit to 5GB
 options(shiny.maxRequestSize=5000*1024^2)

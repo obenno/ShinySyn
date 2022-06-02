@@ -17,10 +17,10 @@ dependencies:
   - r-tidyverse
   - r-vroom
   - r-markdown
+  - r-fs
   - more-itertools
   - ca-certificates
   - certifi
   - openssl
   - gffread
   - gzip
-
