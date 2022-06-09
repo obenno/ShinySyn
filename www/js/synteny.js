@@ -1839,3 +1839,18 @@ function plotDotView(dotViewData){
     .attr("class", "brush")
     .call(brush);
 }
+
+
+Shiny.addCustomMessageHandler("updateChrFontSize", updateChrFontSize);
+
+function updateChrFontSize(fontSize){
+    console.log(fontSize);
+    d3.selectAll(".macroQueryGroup")
+        .selectAll("text")
+        .filter(":not(#queryMainLabel)")
+        .attr("font-size", fontSize);
+    d3.selectAll(".macroSubjectGroup")
+        .selectAll("text")
+        .filter(":not(#subjectMainLabel)")
+        .attr("font-size", fontSize);
+}

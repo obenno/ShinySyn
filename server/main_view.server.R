@@ -454,3 +454,7 @@ observeEvent(input$selected_anchors, {
         )
     })
 })
+
+observeEvent(input$macroChrFontSize, {
+    session$sendCustomMessage(type = "updateChrFontSize", input$macroChrFontSize)
+})

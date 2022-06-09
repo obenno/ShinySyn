@@ -37,6 +37,12 @@ mainView_ui <- tabPanel(
                     label = "Macro Ribbon Color",
                     value = "#808080"
                 ),
+                sliderTextInput(
+                    inputId = "macroChrFontSize",
+                    label = "Chromosomes Label Size",
+                    choices = paste0(seq(0.5, 2, by = 0.1),"rem"),
+                    selected = "1rem"
+                ),
                 hr(class = "setting"),
                 h5("Micro Synteny"),
                 awesomeCheckbox(
