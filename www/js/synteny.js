@@ -285,6 +285,8 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("font-size", "8")
             .attr("font-family", "sans-serif");
 
+        var ribbionEnterTime = null;
+        var ribbionOutTime = null;
         const ribbons = svg.append("g")
               .attr("class", "macroRibbons")
               .selectAll("g")
@@ -301,6 +303,7 @@ function plotMacroSynteny(macroSyntenyData){
                     "<b>Subject:</b> " + d.s_startGene + " : " + d.s_endGene;
             })  // Add tippy data attr
             .on("mouseover", function(){
+                ribbionEnterTime = new Date().getTime();
                 d3.select(this)
                     .transition()
                     .delay(tooltipDelay)
@@ -308,10 +311,13 @@ function plotMacroSynteny(macroSyntenyData){
                     .style("fill", "red");
             })
             .on("mouseout", function(){
-                d3.select(this)
-                    .transition()
-                    .duration(50)
-                    .style("fill", macroRibbonColor);
+                ribbionOutTime = new Date().getTime();
+                if(ribbionOutTime-ribbionEnterTime<=8000){
+                    d3.select(this)
+                        .transition()
+                        .duration(50)
+                        .style("fill", macroRibbonColor);
+                }
             })
             .on("click", function(){
                 const data = d3.select(this)
@@ -551,6 +557,8 @@ function plotMacroSynteny(macroSyntenyData){
             };
         });
 
+        var ribbionEnterTime = null;
+        var ribbionOutTime = null;
         const ribbonGroup = svg.append("g")
               .attr("class", "macroRibbons")
               .selectAll("path")
@@ -565,6 +573,7 @@ function plotMacroSynteny(macroSyntenyData){
                       "<b>Subject:</b> " + d.s_startGene + " : " + d.s_endGene;
               })  // Add tippy data attr
               .on("mouseover", function(){
+                  ribbionEnterTime = new Date().getTime();
                   d3.select(this)
                       .transition()
                       .delay(tooltipDelay)
@@ -572,10 +581,13 @@ function plotMacroSynteny(macroSyntenyData){
                       .style("fill", "red");
               })
               .on("mouseout", function(){
-                  d3.select(this)
-                      .transition()
-                      .duration(50)
-                      .style("fill", macroRibbonColor);
+                  ribbionOutTime = new Date().getTime();
+                  if(ribbionOutTime-ribbionEnterTime<=8000){
+                      d3.select(this)
+                          .transition()
+                          .duration(50)
+                          .style("fill", macroRibbonColor);
+                  }
               })
               .on("click", function(){
                   const data = d3.select(this)
