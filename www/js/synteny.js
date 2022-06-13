@@ -189,6 +189,7 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("startOffset","50%")
             .style("text-anchor","middle")
             .attr("xlink:href",d => "#queryGroup" + d.index)
+            .attr("class", "queryChrLabel")
             .text(d => d.data.chr);
 
         const queryGroupTick = queryGroup.append("g")
@@ -262,6 +263,7 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("startOffset","50%")
             .style("text-anchor","middle")
             .attr("xlink:href",d => "#subjectGroup" + d.index)
+            .attr("class", "subjectChrLabel")
             .text(d => d.data.chr);
 
         const subjectGroupTick = subjectGroup.append("g")
@@ -440,7 +442,8 @@ function plotMacroSynteny(macroSyntenyData){
             })
             .attr("font-weight", "bold")
             .attr("font-size", "1rem")
-            .attr("font-family", "sans-serif");
+            .attr("font-family", "sans-serif")
+            .attr("class", "queryChrLabel");
 
         // add rect for query chrs
         queryGroup
@@ -483,7 +486,8 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("y", d3.select("#subjectMainLabel").attr("y") - d3.select("#subjectMainLabel").node().getBBox().height - 5)
             .attr("font-weight", "bold")
             .attr("font-size", "1rem")
-            .attr("font-family", "sans-serif");
+            .attr("font-family", "sans-serif")
+            .attr("class", "subjectChrLabel");
 
         // plot subject chrs
         subjectGroup
@@ -1845,12 +1849,10 @@ Shiny.addCustomMessageHandler("updateChrFontSize", updateChrFontSize);
 
 function updateChrFontSize(fontSize){
     console.log(fontSize);
-    d3.selectAll(".macroQueryGroup")
-        .selectAll("text")
-        .filter(":not(#queryMainLabel)")
+    d3.selectAll("text.queryChrLabel,textPath.queryChrLabel")
+        .transition()
         .attr("font-size", fontSize);
-    d3.selectAll(".macroSubjectGroup")
-        .selectAll("text")
-        .filter(":not(#subjectMainLabel)")
+    d3.selectAll("text.subjectChrLabel,textPath.subjectChrLabel")
+        .transition()
         .attr("font-size", fontSize);
 }
