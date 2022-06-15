@@ -450,7 +450,8 @@ function plotMacroSynteny(macroSyntenyData){
             .data(queryChrInfo)
             .join("text")
             .text((d) => d.chr)
-            .attr("x", d => d3.mean([queryScale(d.accumulate_end), queryScale(d.accumulate_start)]))
+            .attr("text-anchor", "middle")
+            .attr("x", (d) => d3.mean([queryScale(d.accumulate_end), queryScale(d.accumulate_start)]))
             .attr("y", function(){
                 return Number(d3.select("#queryMainLabel").attr("y")) + Number(5) + Number(d3.select(this).node().getBBox().height);
             })
@@ -496,6 +497,7 @@ function plotMacroSynteny(macroSyntenyData){
             .data(subjectChrInfo)
             .join("text")
             .text((d) => d.chr)
+            .attr("text-anchor", "middle")
             .attr("x", (d) => d3.mean([subjectScale(d.accumulate_end), subjectScale(d.accumulate_start)]))
             .attr("y", d3.select("#subjectMainLabel").attr("y") - d3.select("#subjectMainLabel").node().getBBox().height - 5)
             .attr("font-weight", "bold")
@@ -617,14 +619,6 @@ function plotMacroSynteny(macroSyntenyData){
                                     }
                                    );
               });
-        // center chr labels
-        svg.selectAll("text")
-            .filter(":not(#queryMainLabel)")
-            .filter(":not(#subjectMainLabel)")
-           // don't use this in () => {}, not work
-            .attr("x", function(d, i){
-                return d3.select(this).attr("x") - d3.select(this).node().getComputedTextLength()/2;
-            });
     }
 
 
