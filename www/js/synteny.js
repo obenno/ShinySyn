@@ -163,20 +163,23 @@ function plotMacroSynteny(macroSyntenyData){
                 newArc = newArc.replace(/,/g , " ");
                 //flip the end and start position
                 if (d.endAngle > 90 * Math.PI/180 && d.endAngle < 270 * Math.PI/180) {
-                    //Everything between the capital M and first capital A
-                    let startLoc = /M(.*?)A/;
-                    //Everything between the capital A and 0 0 1
-                    let middleLoc = /A(.*?)0 0 1/;
-                    //Everything between the 0 0 1 and the end of the string (denoted by $)
-                    let endLoc = /0 0 1 (.*?)$/;
-                    //Flip the direction of the arc by switching the start and end point
-                    //and using a 0 (instead of 1) sweep flag
-                    let newStart = endLoc.exec( newArc )[1];
-                    let newEnd = startLoc.exec( newArc )[1];
-                    let middleSec = middleLoc.exec( newArc )[1];
+                    let fullpath = /M(.*?)A(.*?)0 0 1 (.*?)$/;
+                    if(newArc.match(fullpath)){
+                        //Everything between the capital M and first capital A
+                        let startLoc = /M(.*?)A/;
+                        //Everything between the capital A and 0 0 1
+                        let middleLoc = /A(.*?)0 0 1/;
+                        //Everything between the 0 0 1 and the end of the string (denoted by $)
+                        let endLoc = /0 0 1 (.*?)$/;
+                        //Flip the direction of the arc by switching the start and end point
+                        //and using a 0 (instead of 1) sweep flag
+                        let newStart = endLoc.exec( newArc )[1];
+                        let newEnd = startLoc.exec( newArc )[1];
+                        let middleSec = middleLoc.exec( newArc )[1];
 
-                    //Build up the new arc notation, set the sweep-flag to 0
-                    newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
+                        //Build up the new arc notation, set the sweep-flag to 0
+                        newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
+                    }
                 }
                 return newArc;
             });
@@ -233,31 +236,36 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("d", (d) => {
                 let pathRegex = /(^.+?)L/;
                 let newArc = pathRegex.exec( arc(d) )[1];
+                //console.log(newArc);
                 //Replace all the commas so that IE can handle it
                 newArc = newArc.replace(/,/g , " ");
                 //flip the end and start position
-                if (d.endAngle > 90 * Math.PI/180 && d.endAngle < 270 * Math.PI/180) {
-                    //Everything between the capital M and first capital A
-                    let startLoc = /M(.*?)A/;
-                    //Everything between the capital A and 0 0 1
-                    let middleLoc = /A(.*?)0 0 1/;
-                    //Everything between the 0 0 1 and the end of the string (denoted by $)
-                    let endLoc = /0 0 1 (.*?)$/;
-                    //Flip the direction of the arc by switching the start and end point
-                    //and using a 0 (instead of 1) sweep flag
-                    let newStart = endLoc.exec( newArc )[1];
-                    let newEnd = startLoc.exec( newArc )[1];
-                    let middleSec = middleLoc.exec( newArc )[1];
+                if (d.startAngle > 90 * Math.PI/180 && d.startAngle < 270 * Math.PI/180) {
+                    // first check whether the Arc string is complete
+                    let fullpath = /M(.*?)A(.*?)0 0 1 (.*?)$/;
+                    if(newArc.match(fullpath)){
+                        //Everything between the capital M and first capital A
+                        let startLoc = /M(.*?)A/;
+                        //Everything between the capital A and 0 0 1
+                        let middleLoc = /A(.*?)0 0 1/;
+                        //Everything between the 0 0 1 and the end of the string (denoted by $)
+                        let endLoc = /0 0 1 (.*?)$/;
+                        //Flip the direction of the arc by switching the start and end point
+                        //and using a 0 (instead of 1) sweep flag
+                        let newStart = endLoc.exec( newArc )[1];
+                        let newEnd = startLoc.exec( newArc )[1];
+                        let middleSec = middleLoc.exec( newArc )[1];
 
-                    //Build up the new arc notation, set the sweep-flag to 0
-                    newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
+                        //Build up the new arc notation, set the sweep-flag to 0
+                        newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
+                    }
                 }
                 return newArc;
             });
 
         subjectGroup.append("text")
             .attr("dy", function(d, i){
-                return (d.endAngle > 90 * Math.PI/180 && d.endAngle < 270 * Math.PI/180 ? 35 : -28);
+                return (d.startAngle > 90 * Math.PI/180 && d.startAngle < 270 * Math.PI/180 ? 35 : -28);
             })
             .append("textPath")
             .attr("startOffset","50%")
