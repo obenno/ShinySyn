@@ -39,8 +39,10 @@ ui <- tagList(
         pipeline_ui,
         help_ui
     ),
-    tags$script(src="https://unpkg.com/@popperjs/core@2"),
-    tags$script(src="https://unpkg.com/tippy.js@6"),
+    ##tags$script(src="https://unpkg.com/@popperjs/core@2"),
+    ##tags$script(src="https://unpkg.com/tippy.js@6"),
+    tags$script(src = "js/popper.v2.11.5.min.js"),
+    tags$script(src = "js/tippy-bundle.umd.v6.3.7.min.js"),
     tags$script(src = "js/d3.min.js"),
     tags$script(src = "js/synteny.min.js"),
     tags$script("tippy('[data-tippy-content]');")
