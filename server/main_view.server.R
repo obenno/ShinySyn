@@ -120,6 +120,8 @@ observeEvent(input$macroPlotMode, {
 observeEvent(input$macroSynteny, {
 
     output$microAnchor_out <- NULL
+    shinyjs::hide("microSynteny_download")
+
     if(querySpecies() == "" || subjectSpecies() == ""){
         shinyalert("Oops!", "Please input query and subject species name", type = "error")
     }else if(is.null(queryBedFile()) || is.null(subjectBedFile())){
@@ -332,6 +334,7 @@ observeEvent(input$macroSynteny, {
             )
 
             session$sendCustomMessage(type = "plotDotView", dot_view_data)
+            shinyjs::show("dotView_download")
         }
         ## hide spinner
         mainView_waiter$hide()
@@ -413,7 +416,7 @@ observeEvent(input$selected_macroRegion, {
 
     session$sendCustomMessage(type = "plotSelectedMicroSynteny", micro_synteny_data)
 
-    ##shinyjs::show("microSynteny_download")
+    shinyjs::show("microSynteny_download")
 
 })
 

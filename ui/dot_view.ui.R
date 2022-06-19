@@ -3,7 +3,32 @@ dotView_ui <- tabPanel(
     fluidRow(
         column(
             6,
-            div(id="dotView")
+            fluidRow(
+                column(
+                    12,
+                    div(id="dotView")
+                )
+            ),
+            fluidRow(
+                class = "justify-content-end",
+                div(class = "col-sm-auto",
+                    style = "padding-bottom: 7.5px;",
+                    shinyjs::hidden(
+                                 actionButton(
+                                     inputId = "dotView_download",
+                                     status = "secondary",
+                                     icon = icon("download"),
+                                     label = "Dot View PNG"
+                                 )
+                                 ##downloadButton_custom(
+                                 ##    "dotView_download",
+                                 ##    status = "secondary",
+                                 ##    icon = icon("download"),
+                                 ##    label = "Dot View SVG"
+                                 ##)
+                             )
+                    )
+            )
         ),
         column(
             6,

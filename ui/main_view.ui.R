@@ -239,6 +239,20 @@ mainView_ui <- tabPanel(
                     )
                 ),
                 fluidRow(
+                    class = "justify-content-end",
+                    div(class = "col-sm-auto",
+                        style = "padding-bottom: 7.5px;",
+                        shinyjs::hidden(
+                                     downloadButton_custom(
+                                         "microSynteny_download",
+                                         status = "secondary",
+                                         icon = icon("download"),
+                                         label = "Micro Synteny SVG"
+                                     )
+                                 )
+                        )
+                ),
+                fluidRow(
                     column(
                         width = 12,
                         tags$div(id = "microSyntenyTable",

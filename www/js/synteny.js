@@ -331,23 +331,23 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("fill", macroRibbonColor)
             .attr("opacity", 0.6)
             .attr("d", d => ribbon(d.ribbonAngle, innerRadius))
-            .attr("class", d => "from_" + d.queryChr + " to_" + d.subjectChr)
-            .attr("data-tippy-content", d => {
-                return "<b>Query:</b> " + d.q_startGene + " : " + d.q_endGene +
-                    "&#8594" +
-                    "<b>Subject:</b> " + d.s_startGene + " : " + d.s_endGene;
-            })  // Add tippy data attr
-            .on("mouseover", function(){
-                ribbionEnterTime = new Date().getTime();
-                d3.select(this)
-                    .transition()
-                    .delay(tooltipDelay)
-                    .duration(50)
-                    .style("fill", "red");
-            })
-            .on("mouseout", function(){
-                ribbionOutTime = new Date().getTime();
-                if(ribbionOutTime-ribbionEnterTime<=8000){
+                .attr("class", d => "from_" + d.queryChr + " to_" + d.subjectChr)
+                .attr("data-tippy-content", d => {
+                    return "<b>Query:</b> " + d.q_startGene + " : " + d.q_endGene +
+                        "&#8594" +
+                        "<b>Subject:</b> " + d.s_startGene + " : " + d.s_endGene;
+                })  // Add tippy data attr
+                .on("mouseover", function(){
+                    ribbionEnterTime = new Date().getTime();
+                    d3.select(this)
+                        .transition()
+                        .delay(tooltipDelay)
+                        .duration(50)
+                        .style("fill", "red");
+                })
+                .on("mouseout", function(){
+                    ribbionOutTime = new Date().getTime();
+                    if(ribbionOutTime-ribbionEnterTime<=8000){
                     d3.select(this)
                         .transition()
                         .duration(50)
@@ -686,6 +686,7 @@ function plotMacroSynteny(macroSyntenyData){
     tippy(".macroRibbons path", {trigger: "mouseenter", followCursor: "initial", allowHTML: true, delay: [tooltipDelay, null]});
     // update svg download link
     downloadSVG("marcoSynteny_download", "macroSyntenyBlock");
+    downloadSVGwithForeign("dotView_download", "dotView");
 }
 
 // use d3.pie() to calculate angles for all the arcs
@@ -1465,6 +1466,141 @@ function downloadSVG(downloadButtonID, svgDivID){
         d3.select(this)
             .attr("download", "output.svg")
             .attr("href", url);
+    });
+}
+
+// forked from https://observablehq.com/@mootari/embed-canvas-into-svg
+// Converts embedded canvas elements to images.
+function createSvgSnapshot(source) {
+  const target = source.cloneNode(true);
+  const scList = Array.from(source.querySelectorAll('canvas'));
+  const tcList = Array.from(target.querySelectorAll('canvas'));
+  if(scList.length !== tcList.length) throw Error('Canvas mismatch');
+  scList.map((c,i) => {
+      //const img = html`<img>`;
+      const img = document.createElement("img");
+      for(let k of ['width', 'height']) img.setAttribute(k, c.getAttribute(k));
+      img.src = c.toDataURL();
+      tcList[i].replaceWith(img);
+  });
+    //return serialize(target);
+    serializeString(target);
+}
+
+// Forked from https://observablehq.com/@mbostock/saving-svg
+// refer some codes to https://observablehq.com/@bumbeishvili/foreignobject-exporting-issue
+function serializeString(svg) {
+    const xmlns = 'http://www.w3.org/2000/xmlns/';
+    const xlinkns = 'http://www.w3.org/1999/xlink';
+    const svgns = 'http://www.w3.org/2000/svg';
+    svg = svg.cloneNode(true);
+    const fragment = window.location.href + '#';
+    const walker = document.createTreeWalker(svg, NodeFilter.SHOW_ELEMENT, null, false);
+    while (walker.nextNode()) {
+      for (const attr of walker.currentNode.attributes) {
+        if (attr.value.includes(fragment)) {
+          attr.value = attr.value.replace(fragment, '#');
+        }
+      }
+    }
+    svg.setAttributeNS(xmlns, 'xmlns', svgns);
+    svg.setAttributeNS(xmlns, 'xmlns:xlink', xlinkns);
+    const serializer = new XMLSerializer();
+    const string = serializer.serializeToString(svg);
+    return string;
+}
+
+//function rasterize(svg) {
+//    const scList = Array.from(svg.querySelectorAll('canvas'));
+//
+//    const url = 'data:image/svg+xml; charset=utf8, ' + encodeURIComponent(serializeString(svg));
+//
+//    const quality = 4;
+//    const image = new Image;
+//
+//    const svgBlob = new Blob([svg], {type: "image/svg+xml"});
+//    let resolve, reject;
+//    const promise = new Promise((y, n) => (resolve = y, reject = n));
+//    image.onload = () => {
+//        const canvas = document.createElement("canvas");
+//        const rect = svg.getBoundingClientRect();
+//        canvas.width = rect.width * quality;
+//        canvas.height = rect.height * quality;
+//        const context = canvas.getContext("2d");
+//        context.fillStyle = '#FAFAFA';
+//        context.fillRect(0, 0, rect.width * quality, rect.height * quality);
+//        context.drawImage(image, 0, 0, rect.width * quality, rect.height * quality);
+//        scList.map((c,i) => {
+//            //const img = html`<img>`;
+//            context.drawImage(c, 0, 0, rect.width * quality, rect.height * quality);
+//        });
+//        context.canvas.toBlob(resolve);
+//        //const datalink = canvas.toDataURL('image/png');
+//        //console.log(datalink);
+//    };
+//    image.src = url;
+//    //console.log(image);
+//    //return canvas;
+//    //console.log(datalink);
+//    //return datalink;
+//    return promise;
+//}
+
+// https://observablehq.com/@bumbeishvili/foreignobject-exporting-issue
+function saveAs(uri, filename) {
+    // create link
+    var link = document.createElement('a');
+    if (typeof link.download === 'string') {
+        document.body.appendChild(link); // Firefox requires the link to be in the body
+        link.download = filename;
+        link.href = uri;
+        link.click();
+        document.body.removeChild(link); // remove the link when done
+    } else {
+        location.replace(uri);
+    }
+}
+
+function downloadSVGwithForeign(downloadButtonID, svgDivID){
+    // Add event listener to the button
+    // since some button are generated dynamically
+    // need to be called each time the button was generated
+    d3.select("#" + downloadButtonID)
+    .on("click", function(e){
+        const chart = d3.select("#" + svgDivID)
+              .select("svg").node();
+
+        const scList = Array.from(chart.querySelectorAll('canvas'));
+
+        const url = 'data:image/svg+xml; charset=utf8, ' + encodeURIComponent(serializeString(chart));
+
+        const quality = 4;
+        const image = new Image;
+
+        image.onload = () => {
+            const canvas = document.createElement("canvas");
+            const rect = chart.getBoundingClientRect();
+            canvas.width = rect.width * quality;
+            canvas.height = rect.height * quality;
+            const context = canvas.getContext("2d");
+            context.fillStyle = '#FAFAFA';
+            context.fillRect(0, 0, rect.width * quality, rect.height * quality);
+            context.drawImage(image, 0, 0, rect.width * quality, rect.height * quality);
+            scList.map((c,i) => {
+                //const img = html`<img>`;
+                context.drawImage(c, 0, 0, rect.width * quality, rect.height * quality);
+            });
+            //context.canvas.toBlob(resolve);
+            //alert ("The image has loaded!");
+            let datalink = canvas.toDataURL('image/png');
+            saveAs(datalink, 'dotView.png');
+            //d3.select(this)
+            //    .attr("download", "output.png")
+            //    .attr("href", datalink);
+            //console.log(datalink);
+        };
+        image.src = url;
+
     });
 }
 
