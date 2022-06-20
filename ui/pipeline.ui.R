@@ -15,7 +15,7 @@ pipeline_ui <- tabPanel(
                    numericInput(
                        inputId = "cscore",
                        label = "Input cscore cut-off",
-                       value = 0.99,
+                       value = 0.7, ## mcscan default cscore is 0.7
                        min = 0,
                        max = 1,
                        step = 0.1,
