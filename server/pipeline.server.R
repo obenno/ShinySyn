@@ -121,13 +121,13 @@ observeEvent(input$mcscan_go, {
             link_gff_cmd <- paste0("ln -s ", gff_input_path, " ", gzipped_gff)
             system(link_gff_cmd)
         }else if(str_detect(gff_input_name, ".gtf$")){
-            convertGTF_cmd <- paste0("gffread ", gff_input_path, " | gzip -c > ", gzipped_gff)
+            convertGTF_cmd <- paste0("gffread --keep-genes ", gff_input_path, " | gzip -c > ", gzipped_gff)
             system(convertGTF_cmd)
         }else if(str_detect(gff_input_name, regex(".gtf.gz$"))){
             gunzipped_gtf <- file_temp(ext = ".gtf")
             gunzip_gtf_cmd <- paste0("gunzip -c ", gff_input_path, " > ", gunzipped_gtf)
             system(gunzip_gtf_cmd)
-            convertGTF_cmd <- paste0("gffread ", gunzipped_gtf, " | gzip -c > ", gzipped_gff)
+            convertGTF_cmd <- paste0("gffread --keep-genes ", gunzipped_gtf, " | gzip -c > ", gzipped_gff)
             system(convertGTF_cmd)
             system(paste0("rm ", gunzipped_gtf))
         }else{
