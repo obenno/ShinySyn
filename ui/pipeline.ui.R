@@ -148,7 +148,9 @@ pipeline_ui <- tabPanel(
                 p(a(href="https://github.com/tanghaibao/jcvi/wiki/MCscan-%28Python-version%29",
                     "https://github.com/tanghaibao/jcvi/wiki/MCscan-%28Python-version%29")),
                 h6("If you use the MCscan pipeline, please also cite its original paper:"),
-                p("Tang, H., Bowers, J. E., Wang, X., Ming, R., Alam, M., & Paterson, A. H. (2008). Synteny and collinearity in plant genomes. Science, 320(5875), 486-488.")
+                p("Tang, H., Bowers, J. E., Wang, X., Ming, R., Alam, M., & Paterson, A. H. (2008). Synteny and collinearity in plant genomes. Science, 320(5875), 486-488."),
+                h6("And the paper of last:"),
+                p("Kiełbasa, S. M., Wan, R., Sato, K., Horton, P., & Frith, M. C. (2011). Adaptive seeds tame genomic sequence comparison. Genome research, 21(3), 487-493.")
             )
         )
         )
