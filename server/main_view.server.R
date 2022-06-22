@@ -4,6 +4,14 @@ synteny <- reactiveValues()
 ## create waiter
 mainView_waiter <- Waiter$new()
 
+observe({
+    if(input$hide_setting){
+        js$hideSetting()
+    }else{
+        js$showSetting()
+    }
+})
+
 ## Setup file path
 ## query BED file path
 queryBedFile <- reactive({

@@ -2,6 +2,7 @@ mainView_ui <- tabPanel(
     "Main View",
     fluidRow(
         column(
+            id = "settingPanel",
             width = 3,
             div(class = "boxLike",
                 style="background-color: #FAF9F6;",
@@ -69,6 +70,7 @@ mainView_ui <- tabPanel(
             )
         ),
         column(
+            id = "mainPanel",
             width = 9,
             div(class="boxLike",
                 fluidRow(
@@ -88,6 +90,25 @@ mainView_ui <- tabPanel(
                         12,
                         materialSwitch(
                             inputId = "use_mcscan",
+                            label = "",
+                            value = FALSE,
+                            right = TRUE,
+                            status = "primary",
+                            width = NULL
+                        )
+                    )
+                ),
+                fluidRow(
+                    column(
+                        12,
+                        h5("Hide Setting Panel on the left")
+                    )
+                ),
+                fluidRow(
+                    column(
+                        12,
+                        materialSwitch(
+                            inputId = "hide_setting",
                             label = "",
                             value = FALSE,
                             right = TRUE,
