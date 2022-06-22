@@ -68,9 +68,9 @@ please note all input files could be compressed by `gzip` (with `.gz` suffix):
 
 <img src="images/ShinySyn_pipeline.png" alt="" class="docImage" width = "100%">
 
-Please note the default `cscore` cut-off is 0.7, here we used 0.99 to retrieve
-the reciprocal best hits (RBHs) of the orthologous genes. More explanation of `csocre`
-could refer to this [discussion](https://github.com/tanghaibao/jcvi/issues/141) 
+Please note the default `cscore` cut-off is 0.7, users could use 0.99 to retrieve
+the reciprocal best hits (RBHs) of the orthologous genes as suggested in MCscan's document. 
+More explanation of `csocre` could refer to this [discussion](https://github.com/tanghaibao/jcvi/issues/141) 
 mentioned in the [MCscan's wiki page](https://github.com/tanghaibao/jcvi/wiki/MCscan-%28Python-version%29).
 
 After pipeline finished, user could download all the result file by 
@@ -107,8 +107,11 @@ macro-synteny: **parallel** and **circular**, which could be switched in the set
 
 <img src="images/circularLayout.png" alt="" class="docImage" width = "100%">
 
-If user put mouse over the ribbons (blocks), it will be highlighted and a detial 
-information containing start/end query/subject genes will be shown. 
+If user put mouse over the ribbons (blocks), they will be highlighted and detial 
+information containing start/end query/subject genes will be displayed. 
+When moving over chromosomes/contigs, all the ribbons associated to the selected
+one will be highlighted. User could make the highlight persist 
+by hovering for more than 8 seconds.
 
 #### Micro-synteny
 
