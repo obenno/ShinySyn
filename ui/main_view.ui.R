@@ -40,7 +40,7 @@ mainView_ui <- tabPanel(
                 sliderTextInput(
                     inputId = "macroChrFontSize",
                     label = "Chromosomes Label Size",
-                    choices = paste0(seq(0.5, 2, by = 0.1),"rem"),
+                    choices = paste0(seq(0.2, 2, by = 0.1),"rem"),
                     selected = "1rem"
                 ),
                 hr(class = "setting"),
