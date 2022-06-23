@@ -157,6 +157,13 @@ function plotMacroSynteny(macroSyntenyData){
                     .delay(tooltipDelay)
                     .duration(50)
                     .style("fill", "red");
+                d3.select(".macroRibbons")
+                    .selectAll("path")
+                    .filter(":not(.from_" + d.data.chr + ")")
+                    .transition()
+                    .delay(tooltipDelay)
+                    .duration(50)
+                    .attr("opacity", 0.1);
             })
             .on("mouseout", (e, d) => {
                 ribbonOutTime = new Date().getTime();
@@ -166,6 +173,12 @@ function plotMacroSynteny(macroSyntenyData){
                         .duration(50)
                         .style("fill", macroRibbonColor);
                 }
+                d3.select(".macroRibbons")
+                    .selectAll("path")
+                    .filter(":not(.from_" + d.data.chr + ")")
+                    .transition()
+                    .duration(50)
+                    .attr("opacity", 0.6);
             });
         // group.append("title")
         //     .text(d => d.data.chr);
@@ -252,6 +265,13 @@ function plotMacroSynteny(macroSyntenyData){
                     .delay(tooltipDelay)
                     .duration(50)
                     .style("fill", "red");
+                d3.select(".macroRibbons")
+                    .selectAll("path")
+                    .filter(":not(.to_" + d.data.chr + ")")
+                    .transition()
+                    .delay(tooltipDelay)
+                    .duration(50)
+                    .attr("opacity", 0.1);
             })
             .on("mouseout", (e, d) => {
                 ribbonOutTime = new Date().getTime();
@@ -261,6 +281,12 @@ function plotMacroSynteny(macroSyntenyData){
                         .duration(50)
                         .style("fill", macroRibbonColor);
                 }
+                d3.select(".macroRibbons")
+                    .selectAll("path")
+                    .filter(":not(.to_" + d.data.chr + ")")
+                    .transition()
+                    .duration(50)
+                    .attr("opacity", 0.6);
             });
         // subjectGroup.append("title")
         //     .text(d => d.data.chr);
@@ -339,27 +365,27 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("fill", macroRibbonColor)
             .attr("opacity", 0.6)
             .attr("d", d => ribbon(d.ribbonAngle, innerRadius))
-                .attr("class", d => "from_" + d.queryChr + " to_" + d.subjectChr)
-                .attr("data-tippy-content", d => {
-                    return "<b>Query:</b> " + d.q_startGene + " : " + d.q_endGene +
-                        "&#8594" +
-                        "<b>Subject:</b> " + d.s_startGene + " : " + d.s_endGene;
-                })  // Add tippy data attr
-                .on("mouseover", function(){
-                    ribbonEnterTime = new Date().getTime();
-                    d3.select(this)
-                        .transition()
-                        .delay(tooltipDelay)
-                        .duration(50)
-                        .style("fill", "red");
-                })
-                .on("mouseout", function(){
-                    ribbonOutTime = new Date().getTime();
-                    if(ribbonOutTime-ribbonEnterTime<=8000){
-                    d3.select(this)
-                        .transition()
-                        .duration(50)
-                        .style("fill", macroRibbonColor);
+            .attr("class", d => "from_" + d.queryChr + " to_" + d.subjectChr)
+            .attr("data-tippy-content", d => {
+                return "<b>Query:</b> " + d.q_startGene + " : " + d.q_endGene +
+                    "&#8594" +
+                    "<b>Subject:</b> " + d.s_startGene + " : " + d.s_endGene;
+            })  // Add tippy data attr
+            .on("mouseover", function(){
+                ribbonEnterTime = new Date().getTime();
+                d3.select(this)
+                    .transition()
+                    .delay(tooltipDelay)
+                    .duration(50)
+                    .style("fill", "red");
+            })
+            .on("mouseout", function(){
+                ribbonOutTime = new Date().getTime();
+                if(ribbonOutTime-ribbonEnterTime<=8000){
+                d3.select(this)
+                    .transition()
+                    .duration(50)
+                    .style("fill", macroRibbonColor);
                 }
             })
             .on("click", function(){
@@ -518,6 +544,13 @@ function plotMacroSynteny(macroSyntenyData){
                     .delay(tooltipDelay)
                     .duration(50)
                     .style("fill", "red");
+                d3.select(".macroRibbons")
+                    .selectAll("path")
+                    .filter(":not(.from_" + d.chr + ")")
+                    .transition()
+                    .delay(tooltipDelay)
+                    .duration(50)
+                    .attr("opacity", 0.1);
             })
             .on("mouseout", (e, d) => {
                 ribbonOutTime = new Date().getTime();
@@ -527,6 +560,12 @@ function plotMacroSynteny(macroSyntenyData){
                         .duration(50)
                         .style("fill", macroRibbonColor);
                 }
+                d3.select(".macroRibbons")
+                    .selectAll("path")
+                    .filter(":not(.from_" + d.chr + ")")
+                    .transition()
+                    .duration(50)
+                    .attr("opacity", 0.6);
             });
 
         // add main label for subject chrs
@@ -580,6 +619,13 @@ function plotMacroSynteny(macroSyntenyData){
                     .delay(tooltipDelay)
                     .duration(50)
                     .style("fill", "red");
+                d3.select(".macroRibbons")
+                    .selectAll("path")
+                    .filter(":not(.to_" + d.chr + ")")
+                    .transition()
+                    .delay(tooltipDelay)
+                    .duration(50)
+                    .attr("opacity", 0.1);
             })
             .on("mouseout", (e, d) => {
                 ribbonOutTime = new Date().getTime();
@@ -589,6 +635,12 @@ function plotMacroSynteny(macroSyntenyData){
                         .duration(50)
                         .style("fill", macroRibbonColor);
                 }
+                d3.select(".macroRibbons")
+                    .selectAll("path")
+                    .filter(":not(.to_" + d.chr + ")")
+                    .transition()
+                    .duration(50)
+                    .attr("opacity", 0.6);
             });
 
 
