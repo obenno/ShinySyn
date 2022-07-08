@@ -122,6 +122,12 @@ To only pull the pre-built image from [dockerhub](https://hub.docker.com/), use:
 docker pull obenno/shinysyn
 ```
 
+Users in the mainland of China could use the image below:
+
+```
+docker run -p 3838:3838 registry-intl.cn-hangzhou.aliyuncs.com/obenno/shinysyn
+```
+
 Note: 
 
 - Windows users needs to install docker desktop, and type the same command
