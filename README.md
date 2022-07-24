@@ -5,6 +5,10 @@ which is a part of `jcvi` (https://github.com/tanghaibao/jcvi) library
 developed by [@tanghaibao](https://github.com/tanghaibao),
 and provide a intuitive connection between macrosynteny and microsynteny (genes).
 
+If you use `ShinySyn`, please cite:
+
+Zhixia Xiao, Hon-Ming Lam, ShinySyn: a Shiny/R application for the interactive visualization and integration of macro- and micro-synteny data, Bioinformatics, 2022;, btac503, https://doi.org/10.1093/bioinformatics/btac503
+
 If you use the `mcscan` pipeline in `ShinySyn`, please also remember to cite its orignal paper:
 
 Tang, H., Bowers, J. E., Wang, X., Ming, R., Alam, M., & Paterson, A. H. (2008). Synteny and collinearity in plant genomes. Science, 320(5875), 486-488.
