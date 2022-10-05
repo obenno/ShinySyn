@@ -90,9 +90,9 @@ observeEvent(input$mcscan_go, {
 
     check_genome_input <- function(genome_name, genome_input){
         genome_file <- file_temp(ext = ".fa.gz")
-        if(str_detect(genome_name, regex(".(fa|fasta)$"))){
+        if(str_detect(genome_name, regex(".(fa|fasta|fna)$"))){
             system(paste0("gzip -c ", genome_input, " > ", genome_file))
-        }else if(str_detect(genome_name, regex(".(fa.gz|fasta.gz)$"))){
+        }else if(str_detect(genome_name, regex(".(fa.gz|fasta.gz|fna.gz)$"))){
             system(paste0("ln -s ", genome_input, " ", genome_file))
         }
         return(genome_file)
