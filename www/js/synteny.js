@@ -151,31 +151,35 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("d", d => arc(d))
             .attr("data-tippy-content", d => "Query: " + d.data.chr)
             .on("mouseover", (e, d) => {
+                //escape dot in the chromose id
+                let selector_chrID = d.data.chr.replaceAll(".", "\\.");
                 ribbonEnterTime = new Date().getTime();
-                d3.selectAll(".from_" + d.data.chr)
+                d3.selectAll(".from_" + selector_chrID)
                     .transition()
                     .delay(tooltipDelay)
                     .duration(50)
                     .style("fill", "red");
                 d3.select(".macroRibbons")
                     .selectAll("path")
-                    .filter(":not(.from_" + d.data.chr + ")")
+                    .filter(":not(.from_" + selector_chrID + ")")
                     .transition()
                     .delay(tooltipDelay)
                     .duration(50)
                     .attr("opacity", 0.1);
             })
             .on("mouseout", (e, d) => {
+                //escape dot in the chromose id
+                let selector_chrID = d.data.chr.replaceAll(".", "\\.");
                 ribbonOutTime = new Date().getTime();
                 if(ribbonOutTime-ribbonEnterTime<=8000){
-                    d3.selectAll(".from_" + d.data.chr)
+                    d3.selectAll(".from_" + selector_chrID)
                         .transition()
                         .duration(50)
                         .style("fill", macroRibbonColor);
                 }
                 d3.select(".macroRibbons")
                     .selectAll("path")
-                    .filter(":not(.from_" + d.data.chr + ")")
+                    .filter(":not(.from_" + selector_chrID + ")")
                     .transition()
                     .duration(50)
                     .attr("opacity", 0.6);
@@ -259,31 +263,35 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("d", arc)
             .attr("data-tippy-content", d => "Subject: " + d.data.chr)
             .on("mouseover", (e, d) => {
+                //escape dot in the chromose id
+                let selector_chrID = d.data.chr.replaceAll(".", "\\.");
                 ribbonEnterTime = new Date().getTime();
-                d3.selectAll(".to_" + d.data.chr)
+                d3.selectAll(".to_" + selector_chrID)
                     .transition()
                     .delay(tooltipDelay)
                     .duration(50)
                     .style("fill", "red");
                 d3.select(".macroRibbons")
                     .selectAll("path")
-                    .filter(":not(.to_" + d.data.chr + ")")
+                    .filter(":not(.to_" + selector_chrID + ")")
                     .transition()
                     .delay(tooltipDelay)
                     .duration(50)
                     .attr("opacity", 0.1);
             })
             .on("mouseout", (e, d) => {
+                //escape dot in the chromose id
+                let selector_chrID = d.data.chr.replaceAll(".", "\\.");
                 ribbonOutTime = new Date().getTime();
                 if(ribbonOutTime-ribbonEnterTime<=8000){
-                    d3.selectAll(".to_" + d.data.chr)
+                    d3.selectAll(".to_" + selector_chrID)
                         .transition()
                         .duration(50)
                         .style("fill", macroRibbonColor);
                 }
                 d3.select(".macroRibbons")
                     .selectAll("path")
-                    .filter(":not(.to_" + d.data.chr + ")")
+                    .filter(":not(.to_" + selector_chrID + ")")
                     .transition()
                     .duration(50)
                     .attr("opacity", 0.6);
@@ -538,31 +546,35 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("ry", chrRectRy)
             .attr("data-tippy-content", (d) => "Query: " + d.chr)
             .on("mouseover", (e, d) => {
+                //escape dot in the chromose id
+                let selector_chrID = d.chr.replaceAll(".", "\\.");
                 ribbonEnterTime = new Date().getTime();
-                d3.selectAll(".from_" + d.chr)
+                d3.selectAll(".from_" + selector_chrID)
                     .transition()
                     .delay(tooltipDelay)
                     .duration(50)
                     .style("fill", "red");
                 d3.select(".macroRibbons")
                     .selectAll("path")
-                    .filter(":not(.from_" + d.chr + ")")
+                    .filter(":not(.from_" + selector_chrID + ")")
                     .transition()
                     .delay(tooltipDelay)
                     .duration(50)
                     .attr("opacity", 0.1);
             })
             .on("mouseout", (e, d) => {
+                //escape dot in the chromose id
+                let selector_chrID = d.chr.replaceAll(".", "\\.");
                 ribbonOutTime = new Date().getTime();
                 if(ribbonOutTime-ribbonEnterTime<=8000){
-                    d3.selectAll(".from_" + d.chr)
+                    d3.selectAll(".from_" + selector_chrID)
                         .transition()
                         .duration(50)
                         .style("fill", macroRibbonColor);
                 }
                 d3.select(".macroRibbons")
                     .selectAll("path")
-                    .filter(":not(.from_" + d.chr + ")")
+                    .filter(":not(.from_" + selector_chrID + ")")
                     .transition()
                     .duration(50)
                     .attr("opacity", 0.6);
@@ -613,31 +625,35 @@ function plotMacroSynteny(macroSyntenyData){
             .attr("ry", chrRectRy)
             .attr("data-tippy-content", (d) => "Subject: " + d.chr)
             .on("mouseover", (e, d) => {
+                //escape dot in the chromose id
+                let selector_chrID = d.chr.replaceAll(".", "\\.");
                 ribbonEnterTime = new Date().getTime();
-                d3.selectAll(".to_" + d.chr)
+                d3.selectAll(".to_" + selector_chrID)
                     .transition()
                     .delay(tooltipDelay)
                     .duration(50)
                     .style("fill", "red");
                 d3.select(".macroRibbons")
                     .selectAll("path")
-                    .filter(":not(.to_" + d.chr + ")")
+                    .filter(":not(.to_" + selector_chrID + ")")
                     .transition()
                     .delay(tooltipDelay)
                     .duration(50)
                     .attr("opacity", 0.1);
             })
             .on("mouseout", (e, d) => {
+                //escape dot in the chromose id
+                let selector_chrID = d.chr.replaceAll(".", "\\.");
                 ribbonOutTime = new Date().getTime();
                 if(ribbonOutTime-ribbonEnterTime<=8000){
-                    d3.selectAll(".to_" + d.chr)
+                    d3.selectAll(".to_" + selector_chrID)
                         .transition()
                         .duration(50)
                         .style("fill", macroRibbonColor);
                 }
                 d3.select(".macroRibbons")
                     .selectAll("path")
-                    .filter(":not(.to_" + d.chr + ")")
+                    .filter(":not(.to_" + selector_chrID + ")")
                     .transition()
                     .duration(50)
                     .attr("opacity", 0.6);
