@@ -20,10 +20,9 @@ RUN conda install mamba -n base -c conda-forge
 
 ## Setup workdir
 WORKDIR /app
-
 ## download app source
 ## bind to specific tag
-RUN git clone -b v0.1.4 https://github.com/obenno/ShinySyn.git ./shinysyn
+RUN git clone -b v0.1.5 https://github.com/obenno/ShinySyn.git ./shinysyn
 WORKDIR /app/shinysyn
 ## create conda env with app env file
 RUN mamba env create -f shinysyn_env.yml
